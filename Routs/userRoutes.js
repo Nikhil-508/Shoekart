@@ -42,7 +42,7 @@ userRouter.post("/placeOrder",auth.realuserauth,userController.placeOrder)
 //succsespage rendering
 userRouter.get("/successfull",auth.realuserauth,userController.successPage)
 
-//paymentverification
+//paymentverificati
 userRouter.post("/verifyPayment",auth.realuserauth,userController.verifyPayment)
 
 //get successPage
