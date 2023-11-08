@@ -1,0 +1,116 @@
+
+<%- include("../Layout/Adminlayout/admin_header") %>
+<body>
+  <div class="container-scroller">
+    <!-- partial:partials/_navbar.html -->
+          <%- include('../Layout/Adminlayout/admin_navbar') %>
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial:partials/_settings-panel.html -->
+          <%- include('../Layout/Adminlayout/admin_settingspanel') %>
+      <!-- partial -->
+      <!-- partial:partials/_sidebar.html -->
+          <%- include('../Layout/Adminlayout/admin_sidebar') %>
+      <!-- partial -->
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Orders</h4>
+                  <div class="table-responsive pt-3">
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>User</th>
+                          <th>User Email</th>
+                          <th>Products</th>
+                          <th>Delivery Address</th>
+                          <th>Payment Type</th>
+                          <th>Date</th>
+                          <th>Total Amount</th>
+                          <th>Order Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <!-- Loop through the retrieved data and populate the table rows -->
+                        <% for (const order of orders) { %>
+                          <tr>
+                            <td><%= order.userId.name %></td>
+                            <td><%= order.userId.email %></td>
+                            <td>
+                              <% for (const product of order.product) { %>
+                                <!-- Display product information here -->
+                                <p>Product Name: <%= product.productId.name %></p>
+                                <p>Quantity: <%= product.quantity %></p>
+                                <p>Price: $<%= product.price %></p>
+                                <!-- Add more product details as needed -->
+                              <% } %>
+                            </td>
+                            <td><%= order.delilveryAddress %></td>
+                            <td><%= order.paymentType %></td>
+                            <td><%= order.date %></td>
+                            <td>$<%= order.total %></td>
+                            <td>
+                            <div class="dropdown">
+                              <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <%= order.status %>
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Pending</a></li>
+                                <li><a class="dropdown-item" href="#">Cancelled</a></li>
+                                <li><a class="dropdown-item" href="#">Delivered</a></li>
+                              </ul>
+                            </div>
+                          </td>
+                          </tr>
+                        <% } %>
+                      </tbody>
+                    </table>
+                    
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+          </div>
+        </div>
+        <!-- content-wrapper ends -->
+        <!-- partial:../../partials/_footer.html -->
+            <%- include('../Layout/Adminlayout/admin_footer') %>
+                <!-- partial -->
+      </div>
+      <!-- main-panel ends -->
+    </div>   
+    <!-- page-body-wrapper ends -->
+  </div>
+  <!-- container-scroller -->
+
+  <!-- plugins:js -->
+  <script src="vendors/js/vendor.bundle.base.js"></script>
+  <!-- endinject -->
+  <!-- Plugin js for this page -->
+  <script src="vendors/chart.js/Chart.min.js"></script>
+  <script src="vendors/datatables.net/jquery.dataTables.js"></script>
+  <script src="vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
+  <script src="js/dataTables.select.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+  <!-- End plugin js for this page -->
+  <!-- inject:js -->
+  <script src="js/off-canvas.js"></script>
+  <script src="js/hoverable-collapse.js"></script>
+  <script src="js/template.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/todolist.js"></script>
+  <!-- endinject -->
+  <!-- Custom js for this page-->
+  <script src="js/dashboard.js"></script>
+  <script src="js/Chart.roundedBarCharts.js"></script>
+  <!-- End custom js for this page-->
+</body>
+
+</html>

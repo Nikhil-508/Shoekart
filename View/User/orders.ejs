@@ -1,0 +1,142 @@
+<%- include('../Layout/header') %>
+
+<%- include('../Layout/navbar') %>
+
+<body class="goto-here">
+    <div class="py-1 bg-black">
+      <div class="container">
+        <div class="row no-gutters d-flex align-items-start align-items-center px-md-0">
+          <div class="col-lg-12 d-block">
+            <div class="row d-flex">
+              <div class="col-md pr-4 d-flex topper align-items-center">
+                <div class="icon mr-2 d-flex justify-content-center align-items-center"><span
+                    class="icon-phone2"></span></div>
+                <span class="text">+ 1235 2355 98</span>
+              </div>
+              <div class="col-md pr-4 d-flex topper align-items-center">
+                <div class="icon mr-2 d-flex justify-content-center align-items-center"><span
+                    class="icon-paper-plane"></span></div>
+                <span class="text">shoekart777@gmail.com</span>
+              </div>
+              <div class="col-md-5 pr-4 d-flex topper align-items-center text-lg-right">
+                <span class="text">3-5 Business days delivery &amp; Free Returns</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-wrap hero-bread" style="background-image: url('/User/images/bg_6.jpg');">
+      <div class="container">
+        <div class="row no-gutters slider-text align-items-center justify-content-center">
+          <div class="col-md-9 ftco-animate text-center">
+            <p class="breadcrumbs"><span class="mr-2"><a href="index.html">Home</a></span> <span>Orders</span></p>
+            <h1 class="mb-0 bread">My Orders</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="ftco-section ftco-cart">
+			<div class="container">
+				<div class="row">
+    			<div class="col-md-12 ftco-animate">
+    				<div class="cart-list">
+	    				<table class="table">
+						    <thead class="thead-primary">
+						      <tr class="text-center">
+						        <!-- <th>&nbsp;</th>
+						        <th>&nbsp;</th> -->
+								
+								<th>Products</th>
+								<th>Delivery Address</th>
+								<th>Payment Type</th>
+								<th>Date</th>
+								<th>Total Amount</th>
+								<th>Order Status</th>
+						      </tr>
+						    </thead>
+						    <tbody>
+								<% for (const order of orders) { %>
+									<tr>
+									 
+									  <td>
+										<% for (const product of order.product) { %>
+										  <!-- Display product information here -->
+										  <p>Product Name: <%= product.productId.name %></p>
+										  <p>Quantity: <%= product.quantity %></p>
+										  <p>Price: $<%= product.price %></p>
+										  <!-- Add more product details as needed -->
+										<% } %>
+									  </td>
+									  <td><%= order.delilveryAddress %></td>
+									  <td><%= order.paymentType %></td>
+									  <td><%= order.date %></td>
+									  <td>$<%= order.total %></td>
+									  <td>  <%= order.status %></td>
+									</tr>
+								  <% } %>
+						    </tbody>
+						  </table>
+					  </div>
+    			</div>
+    		</div>
+			</div>
+		</section>
+
+
+ 
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<%- include("../Layout/footer") %>
+
+
+    
+  
+
+<!-- loader -->
+<div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+
+<script src="/User/js/jquery.min.js"></script>
+<script src="/User/js/jquery-migrate-3.0.1.min.js"></script>
+<script src="/User/js/popper.min.js"></script>
+<script src="/User/js/bootstrap.min.js"></script>
+<script src="/User/js/jquery.easing.1.3.js"></script>
+<script src="/User/js/jquery.waypoints.min.js"></script>
+<script src="/User/js/jquery.stellar.min.js"></script>
+<script src="/User/js/owl.carousel.min.js"></script>
+<script src="/User/js/jquery.magnific-popup.min.js"></script>
+<script src="/User/js/aos.js"></script>
+<script src="/User/js/jquery.animateNumber.min.js"></script>
+<script src="/User/js/bootstrap-datepicker.js"></script>
+<script src="/User/js/scrollax.min.js"></script>
+<script src="/User/https://maps.googleapis.com/maps/api/js?key=AIzaSyBVWaKrjvy3MaE7SQ74_uJiULgl1JY0H2s&sensor=false"></script>
+<script src="/User/js/google-map.js"></script>
+<script src="/User/js/main.js"></script>
+  
+</body>
+</html>
+
+
