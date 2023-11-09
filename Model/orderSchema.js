@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const products = require('../Model/productSchema')
+const DateOnly = require('mongoose-dateonly')(mongoose);
 
 
 const orderSchema = new mongoose.Schema(
@@ -19,7 +20,7 @@ const orderSchema = new mongoose.Schema(
             required:true
         },
         date:{
-            type:Date,
+            type:DateOnly,
           
         },
         product : [{

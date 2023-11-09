@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 const session = require('express-session');
 const userOtpVerification = require('../Model/userOtpVerification');
 const express = require("express")
+const moment = require('moment')
 const nodemailer = require('nodemailer')
 require('dotenv').config()
 const Products = require('../Model/productSchema')
@@ -74,9 +75,7 @@ const doLogin = async (req, res, next) => {
     try {
         const email = req.body.email
         const password = req.body.password
-        console.log(email.split(''));
         const usermatch = await Users.findOne({ email: email })
-        console.log(usermatch);
         if (!usermatch) {
             return res.render('login', { message: "Invalid email" })
         }
@@ -742,6 +741,7 @@ const placeOrder = async (req, res) => {
 
             // Create an instance of the order using the schema
             const orderId = `orderId-${uuidv4()}`.substring(0, 40)
+            let  formattedDate = moment().format('ddd MMM DD YYYY');
             const order = new Order({
                 userId: req.session.userId,
                 delilveryAddress: addressradio,

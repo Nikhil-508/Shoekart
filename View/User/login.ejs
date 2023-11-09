@@ -86,25 +86,25 @@
         <a href="/signup" class="btn btn-secondary text-decoration-none" id="signUp">Sign Up</a>
         <a href="/forgotPassword" class="btn btn-secondary text-decoration-none" id="forgotPassword">Forgot password?</a>
     </div>
+    <br>
+    <% 
+    if(typeof message!=='undefined'){
+     %>
+     <p style="color: rgb(232, 10, 10);">
+         <%=message%></p>
+     <%
+    }
+    %>
     </form>
 </div>
 
 <style>
     .text-decoration-none {
     text-decoration: none;
-    /* You can add other styles as needed, such as color or font-size. */
   }
 </style>
 
-  
 
-   <% 
-   if(typeof message!=='undefined'){
-    %>
-    <p style="color: rgb(232, 10, 10);"><%=message%></p>
-    <%
-   }
-   %>
 
 </body>
 </html

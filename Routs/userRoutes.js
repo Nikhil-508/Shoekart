@@ -27,7 +27,7 @@ userRouter.get('/all-shoes',auth.realuserauth,userController.getAllshoes)
 userRouter.get('/singleProduct/:productId',auth.realuserauth,userController.getSingleProduct)
 
 
-//get cart
+// cart management
 userRouter.get('/mycart',auth.realuserauth,userController.getCart)
 userRouter.get('/add-to-cart/:productId',auth.realuserauth,userController.addToCart)
 userRouter.post('/updateQuantity',auth.realuserauth,userController.updateQuantity)
@@ -42,7 +42,7 @@ userRouter.post("/placeOrder",auth.realuserauth,userController.placeOrder)
 //succsespage rendering
 userRouter.get("/successfull",auth.realuserauth,userController.successPage)
 
-//paymentverificati
+//paymentverification
 userRouter.post("/verifyPayment",auth.realuserauth,userController.verifyPayment)
 
 //get successPage
@@ -52,7 +52,7 @@ userRouter.get("/successful",userController.getSuccesful)
 userRouter.get('/orders',auth.realuserauth,userController.getorders)
 
 
-//get user Profile
+// user Profile management
 userRouter.get('/user-profile',auth.realuserauth,userController.getUserProfile)
 
 userRouter.get('/user-addAddress',auth.realuserauth,userController.getUserAddAddress)
