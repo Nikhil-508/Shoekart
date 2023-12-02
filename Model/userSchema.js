@@ -2,6 +2,23 @@
 const mongoose = require('mongoose')
 const { array } = require('../Middleware/multer')
 
+const walletTransactionSchema = new mongoose.Schema({
+    amount: {
+      type: Number,
+      required: true,
+    },
+    type: {
+      type: String,
+      required: true,
+    },
+    date: {
+      type: Date,
+      default: Date.now,
+    },
+  });
+
+
+
 const userSchema = new mongoose.Schema(
     {
         name: {
@@ -28,6 +45,11 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+        wallet:{
+            type:Number,
+            default:0
+        },
+        walletTransactions: [walletTransactionSchema],
 
         cart: [
             {

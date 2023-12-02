@@ -1,0 +1,334 @@
+<%- include("../Layout/Adminlayout/admin_header") %>
+
+    <body>
+        <div class="container-scroller">
+            <!-- partial:partials/_navbar.html -->
+            <%- include('../Layout/Adminlayout/admin_navbar') %>
+                <!-- partial -->
+                <div class="container-fluid page-body-wrapper">
+                    <!-- partial:partials/_settings-panel.html -->
+                    <%- include('../Layout/Adminlayout/admin_settingspanel') %>
+                        <!-- partial -->
+                        <!-- partial:partials/_sidebar.html -->
+                        <%- include('../Layout/Adminlayout/admin_sidebar') %>
+                            <!-- partial -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.0/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<div class="container-scroller">
+  <!-- partial:../../partials/_sidebar.html -->
+
+
+  <div class="col-12 grid-margin">
+    <div class="">
+      
+        <br><br>
+
+        <div id="loader" class="loader">
+          Loading...
+        </div>
+        <style>
+          .loader {
+            display: none;
+            /* Initially hidden */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(250, 242, 242, 0.7);
+            color: #000000;
+            text-align: center;
+            padding-top: 20%;
+            z-index: 9999;
+            /* High z-index to ensure it's on top of everything */
+          }
+          .download-button {
+      background: linear-gradient(to right, #0b0a69, #087e0e); /* Example gradient colors */
+      color: #fff; /* Text color */
+      padding: 10px 20px; /* Adjust padding as needed */
+      border: none;
+      border-radius: 5px; /* Rounded corners */
+      cursor: pointer;
+      margin-right: 10px; /* Adjust margin as needed */
+    }
+        </style>
+
+        <br><br>
+        <h4 class="card-title">Report Managment</h4>
+        <div class="">
+          <!-- selecting date for report -->
+          <form action="/admin/Report-managment" id="Reportmanagment" method="post" >
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Staring Date</label>
+              <div class="col-sm-9">
+                <input name="starting"  id="starting" class="form-control col-md-3" placeholder="yyyy/mm/dd" />
+                <p id="startingDateError" style="color: red;"></p>
+              </div>
+              <br>
+              <br>
+              <label class="col-sm-3 col-form-label">Ending Date</label>
+              <div class="col-sm-9">
+                <input name="ending"  id="ending" class="form-control col-md-3" placeholder="yyyy/mm/dd" />
+                <p id="endingError" style="color: red;"></p>
+                <br>
+                <button type="submit" class="btn btn-primary mr-2">Submit</button>
+              </div>
+          </form>
+          <!-- <div>
+                    <td><label class="badge badge-warning">Cancelled Orders</label> : </td> <br>
+                    <td><label class="badge badge-danger">Pending</label> : </td>
+                  </div> -->
+
+
+        </div><br><br><br>
+        <% if (data === 1) { %>
+          <div class="ml-auto text-right w-100">
+            <button class="download-button" onclick="downloadSalesReportPDF()">Download  as PDF</button>
+            <button   class="download-button"onclick="downloadSalesReportExcel()">Download  as Excel</button>
+          </div>
+            <br>
+            <br>
+        <div id="salesReportContent">
+
+          <div  class="text-center fw-bold">
+            <h4>Report &nbsp;(<%= starting %> &nbsp; to &nbsp; <%= ending %>) </h4>
+            <br><br><br>
+          </div>
+          
+            <% let soldPro=0; %>
+            <% deliveredOrders.forEach(order=> { %>
+            <% order.product.forEach(product=> { %>
+            <% soldPro +=product.quantity; %>
+            <% }) %>
+            <% }) %>
+
+            <div class="col-md-12 d-flex justify-content-space-between align-items-center mb-5">
+              <div class="card flex-fill">
+                <!-- Added flex-fill class -->
+                <div class="">
+                  <h4 class="card-title text-primary">No of products sold</h4>
+                  <p class="card-text"><%= soldPro %></p>
+                </div>
+              </div>
+
+              <div class="card ml-3 flex-fill">
+                <!-- Added flex-fill class -->
+                <div class="card-body">
+                  <h4 class="card-title text-success">Completed Orders</h4>
+                  <p class="card-text"><%= deliveredOrders.length %></p>
+                </div>
+              </div>
+
+              <div class="card ml-3 flex-fill">
+                <!-- Added flex-fill class -->
+                <div class="card-body">
+                  <h4 class="card-title text-warning">Return Products</h4>
+                  <p class="card-text"><%= returnedOrders.length %></p>
+                </div>
+              </div>
+
+              <div class="card ml-3 flex-fill">
+                <!-- Added flex-fill class -->
+                <div class="card-body">
+                  <h4 class="card-title text-danger">Cancelled Orders</h4>
+                  <p class="card-text"><%= canceledOrders.length %></p>
+                </div>
+              </div>
+
+              <div class="card ml-3 bg-light flex-fill">
+                <!-- Added flex-fill class -->
+                <div class="card-body">
+                  <h4 class="card-title text-info">Total Revenue</h4>
+                  <p class="card-text">&#8377; <%= totalRevenue && totalRevenue[0] && totalRevenue[0].totalRevenue !== undefined ? totalRevenue[0].totalRevenue : 'Data not available' %></p>
+                </div>
+              </div>
+            </div>
+    
+    <hr class="text-white">
+    <div class="table-responsive">
+      <% if (deliveredOrders.length===0) { %>
+      <div class="text-danger">
+        <h3>No items..</h3>
+      </div>
+      <% } else { %>
+
+
+      <table class="table col-md-10" id="salesReportTable">
+
+        <thead>
+
+          <tr>
+            <th>No</th>
+            <th>User</th>
+            <th>Orders</th>
+            <th>Created</th>
+            <th>Payment Option</th>
+            <th>status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% deliveredOrders.forEach((order,i)=> { %>
+          <tr>
+            <td>
+              <%= i +1%>
+            </td>
+            <td>
+              Name: <%= order.userId.name %> <br><br>Email: <%= order.userId.email %>
+            </td>
+            <td>
+              <% order.product.forEach((element)=> { %>
+                <div class="mb-3">
+
+                
+              Name: <%= element.productId.name %>
+              <br>
+              Q/T: <%= element.quantity %>
+              <br>
+              Total: <%= element.totalProductAmount %> <br>
+            </div>
+              <% }) %>
+              <br>
+              discount: <%= // order.discountAmount %>
+              <hr>
+              <label class="badge badge-danger">Total Order Amount</label> :&#8377; <%= order.total %>
+            </td>
+            <td>
+              <%= order.date.toLocaleString() %>
+                                   
+            </td>
+            <td>
+              <% if (order.paymentType ==="online" ) { %>
+
+              <div class="text-success"><%= order.paymentType %> </div>
+              </label>
+              <% } else if (order.paymentType==="COD" ) {%>
+
+              <div class="text-warning"><%= order.paymentType %></div>
+              </label>
+              <% } %>
+            </td>
+            <td>
+              <% if (order.status ==="Cancelled" ) { %>
+              <div class="text-danger"><%=order.status %></div>
+              <% } else if (order.status==="Returned") {%>
+              <div class="text-warning"><%=order.status %></div>
+              <% } else { %>
+              <div class="text-info"><%=order.status %></div>
+              <% } %>
+            </td>
+
+          </tr>
+          <% }) %>
+         
+        </tbody>
+      </table>
+      <% } %>
+
+      <% } %>
+    </div>
+
+    </div>
+  </div>
+  <%- include('../Layout/Adminlayout/admin_footer') %>
+
+</div>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.0/html2pdf.bundle.min.js"></script>
+
+<!-- Add the following script for SheetJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+
+<script>
+  function downloadSalesReportPDF() {
+    const element = document.getElementById("salesReportContent");
+    html2pdf(element);
+  }
+
+  function downloadSalesReportExcel() {
+    const wb = XLSX.utils.table_to_book(document.getElementById("salesReportTable"));
+    XLSX.writeFile(wb, "sales_report.xlsx");
+  }
+
+
+  const form = document.getElementById("Reportmanagment");
+const startingDate = document.getElementById("starting");
+const startingError = document.getElementById("startingDateError");
+const endingDate = document.getElementById("ending");
+const endingError = document.getElementById("endingError");
+
+form.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  function isDateValid(dateString) {
+  const trimmedDateString = dateString.trim();
+  const regexPattern =  /^(\d{4}[-/]\d{2}[-/]\d{2})$/;
+  return regexPattern.test(trimmedDateString);
+}
+
+
+  function nameValidation() {
+    const value = startingDate.value;
+    const currentDate = new Date();
+
+    if (value === "") {
+      startingError.innerHTML = "Starting date is required";
+      return false;
+    } else if (!isDateValid(value)) {
+      startingError.innerHTML = "Date is not valid or does not match the format.";
+      return false;
+    } else if (new Date(value) > currentDate) {
+      startingError.innerHTML = "Starting date must be a valid date";
+      return false;
+    } else {
+      startingError.innerHTML = "";
+      return true;
+    }
+  }
+
+  function mobileValidation() {
+    const value = startingDate.value;
+    const endingvalue = endingDate.value;
+    const currentDate = new Date();
+
+    if (endingvalue === "") {
+      endingError.innerHTML = "Ending date is required";
+      return false;
+    } else if (!isDateValid(endingvalue)) {
+      endingError.innerHTML = "Date is not valid or does not match the format.";
+      return false;
+    } else if (new Date(endingvalue) > currentDate) {
+      endingError.innerHTML = "Ending date must be a valid date";
+      return false;
+    } else if (value && endingvalue) {
+      if (new Date(endingvalue) < new Date(value)) {
+        endingError.innerHTML = "Ending date must be after the starting date";
+        return false;
+      }
+    } else {
+      endingError.innerHTML = "";
+      return true;
+    }
+  }
+
+  // Run all validations and store the results in an array
+  const validations = [nameValidation(), mobileValidation()];
+
+  // Check if any validation failed
+  const hasErrors = validations.some(validation => validation === false);
+
+  if (!hasErrors) {
+    // Proceed with form submission
+    form.submit();
+  }else{
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Please fix the form errors before submitting.',
+    });
+  }
+});
+
+</script>

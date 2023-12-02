@@ -49,7 +49,7 @@
 	};
 	fullHeight();
 
-	// loader
+	loader
 	var loader = function() {
 		setTimeout(function() { 
 			if($('#ftco-loader').length > 0) {

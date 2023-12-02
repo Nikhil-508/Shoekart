@@ -41,6 +41,14 @@ app.use(nocache())
 app.use("/admin",adminRouter)
 app.use("/",userRouter)
 
+
+//404 error handling
+app.set('views' , './view')
+app.use((err, req, res, next) => {
+    console.log(err);
+    res.render('404error')
+  });
+
 app.set("view engine","ejs")
 
 app.listen(3000 , () => console.log('server running'))

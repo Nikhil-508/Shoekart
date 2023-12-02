@@ -1,0 +1,103 @@
+<%- include("../Layout/Adminlayout/admin_header") %>
+<body>
+  <div class="container-scroller">
+    <!-- partial:partials/_navbar.html -->
+          <%- include('../Layout/Adminlayout/admin_navbar') %>
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial:partials/_settings-panel.html -->
+          <%- include('../Layout/Adminlayout/admin_settingspanel') %>
+      <!-- partial -->
+      <!-- partial:partials/_sidebar.html -->
+          <%- include('../Layout/Adminlayout/admin_sidebar') %>
+      <!-- partial -->
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-12 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="card-title">Edit Categories</h4>
+                    <p class="card-description">
+                      Edit Categories
+                    </p>
+                    <form class="forms-sample" action="/admin/CategoryEdit" method="post" >
+                        <div class="d-none"><input type="text" name="categoryId" value= <%= categoryData._id %> ></div>
+                      <div class="form-group">
+                        <label for="name">Category Name</label>
+                        <input name="name" type="text" value="<%= categoryData.name %>" class="form-control" id="name" placeholder="Name">
+                      </div>
+                     
+
+
+                      <div class="form-group">
+                        <label for="exampleTextarea1">Description</label>
+                        <textarea name="description" class="form-control" id="exampleTextarea1" rows="4"><%= categoryData.description %></textarea>
+                      </div>
+
+
+                      <!-- =========== OFFER ============= -->
+                      <div class="form-group">
+                        <label for="quantity">Offer</label>
+                          <label for="discountPercentage">Discount Percentage:</label>
+                          <input type="number" name="ctgrydiscountPercentage" value="<%= categoryData.
+                          categoryPercentageOffer %>"  id="ctgrydiscountPercentage" min="0" max="100">
+                  
+                          <label for="startDate">Start Date:</label>
+                          <input type="date" name="startDate" id="startDate">
+                  
+                          <label for="endDate">End Date:</label>
+                          <input type="date" name="endDate" id="endDate">
+                      </div>
+                      <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                      <button class="btn btn-light">Cancel</button>
+                      
+                      <% 
+                      if(typeof message!=='undefined'){
+                       %>
+                       <p style="color: rgb(225, 13, 20);"><%=message%></p>
+                       <%
+                      }
+                      %>
+                    </form>
+                  </div>
+                </div>
+              </div>
+          
+          </div>
+        </div>
+        <!-- content-wrapper ends -->
+        <!-- partial:../../partials/_footer.html -->
+            <%- include('../Layout/Adminlayout/admin_footer') %>
+                <!-- partial -->
+      </div>
+      <!-- main-panel ends -->
+    </div>   
+    <!-- page-body-wrapper ends -->
+  </div>
+  <!-- container-scroller -->
+
+  <!-- plugins:js -->
+  <script src="vendors/js/vendor.bundle.base.js"></script>
+  <!-- endinject -->
+  <!-- Plugin js for this page -->
+  <script src="vendors/chart.js/Chart.min.js"></script>
+  <script src="vendors/datatables.net/jquery.dataTables.js"></script>
+  <script src="vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
+  <script src="js/dataTables.select.min.js"></script>
+
+  <!-- End plugin js for this page -->
+  <!-- inject:js -->
+  <script src="js/off-canvas.js"></script>
+  <script src="js/hoverable-collapse.js"></script>
+  <script src="js/template.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/todolist.js"></script>
+  <!-- endinject -->
+  <!-- Custom js for this page-->
+  <script src="js/dashboard.js"></script>
+  <script src="js/Chart.roundedBarCharts.js"></script>
+  <!-- End custom js for this page-->
+</body>
+
+</html>

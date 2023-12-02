@@ -17,6 +17,9 @@ const productSchema = new mongoose.Schema(
             type:Number,
             required:true
         },
+        offerpercentage:{
+            type:Number
+        },
         price:{
             type:Number,
             required:true

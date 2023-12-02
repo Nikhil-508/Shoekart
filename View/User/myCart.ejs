@@ -40,7 +40,7 @@
       </div>
 
       <section class="ftco-section ftco-cart">
-        <div class="container">
+        <div class="container" id="reload-span">
           <div class="row">
             <div class="col-md-12 ftco-animate">
               <div class="cart-list">
@@ -53,10 +53,11 @@
                       <th>Price</th>
                       <th>Quantity</th>
                       <th>Total</th>
+                      <th>Discount</th>
                     </tr>
                   </thead>
                   <tbody>
-
+                    <% let totalDiscount = 0 %>
                     <% response.cart.forEach(element=> { %>
 
                       <tr class="text-center">
@@ -78,11 +79,9 @@
                           </h3>
                           <p>Far far away, behind the word mountains, far from the countries</p>
                         </td>
-
                         <td class="price" id="productPrice_<%= element.product._id %>">
                           <%= element.product.price %>
                         </td>
-
                         <td class="quantity">
                           <div class="input-group mb-3">
                             <span class="input-group-btn mb-3">
@@ -92,11 +91,8 @@
                             </span>
                             <input type="text" name="quantity" class="quantity form-control input-number" readonly
                               value=<%=element.quantity %> min="1" max="100" data-productid="<%= element.product._id %>">
-
-                              <!-- <input type="text" name="quantity" class="quantity form-control input-number" value="1" min="1"
-                                                    max="100"> -->
                               <span class="input-group-btn ml-2">
-                                <button type="button" class="quantity-change btn" data-type="plus">
+                                <button type="button" class="quantity-change btn"  data-type="plus">
                                   <i class="ion-ios-add"></i>
                                 </button>
                               </span>
@@ -104,8 +100,21 @@
                         </td>
 
 
-                        <td class="total" id="productAmount_<%= element.product._id %>">
-                          $<%= element.productAmount * element.quantity %>
+                        <td class="total singleTotalAmount" id="productAmount_<%= element.product._id %>">
+                          <%= element.productAmount %>
+                        </td>
+                        <td  class="discount singleDiscount" id="<%= element.product._id %>totalProductDiscount">
+                          <% let productDiscount = 0 %>
+                          <% let categoryDiscount = 0 %>
+                          <% if (element?.product?.category?.categoryPercentageOffer) { %>
+                           <% categoryDiscount = Math.floor(element.productAmount * (element.product.category.categoryPercentageOffer / 100)) %>
+                          <% } %>
+                          <% if (element.product.offerpercentage) { %>
+                            <% productDiscount = Math.floor(element.productAmount * (element.product.offerpercentage / 100))%>
+                            <% totalDiscount += productDiscount + categoryDiscount %>
+
+                            <%= productDiscount + categoryDiscount %>
+                          <% } %>
                         </td>
                       </tr><!-- END TR-->
                       <% }) %>
@@ -118,48 +127,55 @@
           </div>
           <div class="row justify-content-start">
             <div class="col col-lg-5 col-md-6 mt-5 cart-wrap ftco-animate">
-              <div class="cart-total mb-3">
-                <h3>Cart Totals</h3>
-                <% let subtotal=0; %>
+              <% let subtotal=0; %>
                   <% response.cart.forEach(element=> { %>
-                    <p class="d-flex">
-                      <span>
-                        <%= element.product.name %> (Quantity: <span id="cartTotalsQuantity_<%= element.product._id%>"
-                            class="d-inline">
-                            <%= element.quantity %>
-                          </span>)
-                      </span>
-                      <span id="cartProductAmount_<%= element.product._id %>">$<%= element.productAmount *
-                          element.quantity %></span>
-                    </p>
-                    <% subtotal +=element.productAmount * element.quantity %>
-                      <% }); %>
-                        <hr>
-                        <p class="d-flex total-price">
-                          <span>Total</span>
-                          <span id="subtotal">
-                            <%= subtotal %>
-                          </span>
-                        </p>
-              </div>
+                    
+                    <% subtotal += element.productAmount %>
+                     
+              <% }); %>
+              <div class="cart-total mb-3" >
+                <h3>Cart Totals</h3>
+                <p class="d-flex total-price">
+                  <span>Total</span>
+                  <span id="subtotal">
+                      <%= subtotal %>
+                  </span>
+              </p>
+              <p class="d-flex total-price">
+                <span>Discount</span>
+                <span id="totalDiscount"><%= totalDiscount %></span>
+              </p>
+              <p class="d-flex total-price">
+                <span>Final price</span>
+                <% let finalPrice = subtotal - totalDiscount %>
+                <span id="finalPrice"><%= finalPrice %></span>
+              </p>
+
+            </div>
+                
+              
                <!-- Loop through the cart items and create hidden input fields for each item -->
                <% response.cart.forEach(element => { %>
               <form action="/checkout/<%= element.product._id %>" method="POST" id="checkoutForm">
+                <% let lastPrice = element.product.price - Math.floor(element.product.offerpercentage * subtotal / 100) %>
                   
                   <input type="hidden" name="productId" value="<%= element.product._id %>">
                   <input type="hidden" name="productName" value="<%= element.product.name %>">
                   <input type="hidden" name="quantity" value="<%= element.quantity %>">
                   <input type="hidden" name="productAmount" value="<%= element.productAmount %>">
+                  <input type="hidden" name="lastPrice" value="<%= lastPrice %>">
+                  <input type="hidden" name="finalPrice" id="finalPrice" value="<%= finalPrice %>">
                 <% }); %>
               
                 <!-- Add a hidden input field for the subtotal -->
                 <input type="hidden" name="subtotal" value="<%= subtotal %>">
               
                 <!-- Add a button to submit the form -->
-                <p class="text-center">
-                  <button type="submit" class="btn btn-primary py-3 px-4">Proceed to Checkout</button>
-                </p>
+                <!--  -->
               </form>
+              <p class="text-center">
+                <a href="/checkout" class="btn btn-primary py-3 px-4">Proceed to Checkout</a>
+              </p>
               
               <!-- <p class="text-center"><a href="/checkOut" class="btn btn-primary py-3 px-4">Proceed to Checkout</a></p> -->
             </div>
@@ -219,13 +235,11 @@
 
         <script>
           const submitLinks = document.querySelectorAll(".submit-link");
-
           submitLinks.forEach((link) => {
             link.addEventListener("click", function (event) {
               event.preventDefault();
               const formId = this.getAttribute("data-form-id"); // Get the form ID from the data attribute
               const form = document.getElementById(formId);
-
               if (form) {
                 form.submit(); // Submit the associated form
               }
@@ -233,7 +247,7 @@
           });
         </script>
 
-
+ 
         <script>
           $(document).ready(function () {
             // Listen for quantity increase button clicks
@@ -242,11 +256,17 @@
               let productId = input.data("productid");
               let currentQuantity = parseInt(input.val());
               let minusButton = document.getElementById("minusButton")
-              if (currentQuantity === 1) {
+              // let discountAmount = document.getElementById("discountAmount")
+              // let offerPercentage = document.getElementById("offerPercentage").innerText - 0
+              // let subTotal = document.getElementById("subtotal").innerText - 0
+              // Math.floor(element.product.offerpercentage * subtotal / 100)
+              // let maximumbutton = document.getElementById("maximumbutton")
+              if (currentQuantity === 2) {
                 minusButton.disabled = true
               } else {
                 minusButton.disabled = false
               }
+
               var button = $(this);
               // Access the data-type attribute
               var dataType = button.data('type');
@@ -254,21 +274,34 @@
               // Send an AJAX request to update the quantity
               $.ajax({
                 type: "POST",
-                url: "/updateQuantity", // Replace with the actual route on your server
+                url: "/updateQuantity", 
                 data: { productId: productId, quantity: currentQuantity },
                 success: function (response) {
-                  // Update the quantity and total in the table
+                  
                   input.val(currentQuantity);
+
                   updateTotal(productId, response.newProductAmount);
-                  document.getElementById('productAmount_' + productId).textContent = "$" + response.newProductAmount;
-                  document.getElementById('cartProductAmount_' + productId).textContent = "$" + response.newProductAmount;
-                  document.getElementById('cartTotalsQuantity_' + productId).textContent = currentQuantity;
-                  let subtotal = document.getElementById("subtotal").textContent;
+                  document.getElementById('productAmount_' + productId).textContent =  response.newProductAmount;
+                  let subtotal = document.getElementById("subtotal").innerHTML;
                   if (dataType === 'plus') {
-                    document.getElementById("subtotal").textContent = parseInt(subtotal) + parseInt(document.getElementById("productPrice_" + productId).textContent);
+                    document.getElementById("subtotal").innerHTML = parseInt(subtotal) + parseInt(document.getElementById("productPrice_" + productId).textContent);
                   } else {
-                    document.getElementById("subtotal").textContent = parseInt(subtotal) - parseInt(document.getElementById("productPrice_" + productId).textContent);
+                    document.getElementById("subtotal").innerHTML = parseInt(subtotal) - parseInt(document.getElementById("productPrice_" + productId).textContent);
                   }
+                  document.getElementById(`${response.productId}totalProductDiscount`).innerHTML = response.totalProductDiscount
+                 const singleDiscount =  document.getElementsByClassName("singleDiscount")
+                 console.log(singleDiscount,"singlleeeee" ,typeof singleDiscount);
+                 
+                 let totalDiscount = 0
+
+                 Array.from(singleDiscount).forEach((element)=>{
+                   totalDiscount += (element.innerText - 0)
+                  })
+                  console.log(totalDiscount);
+                 document.getElementById('totalDiscount').innerHTML = totalDiscount
+
+                 document.getElementById('finalPrice').innerHTML = document.getElementById('subtotal').innerHTML - 0 - document.getElementById('totalDiscount').innerHTML - 0
+
                 }
               });
             });
@@ -280,7 +313,7 @@
           }
           function updateCartTotal(newTotalAmount) {
             // Update the cart's total amount with the new total
-            $("#cart-total").text(newTotalAmount); // Use the appropriate element ID or class for your cart total
+            $("#subtotal").text(newTotalAmount); // Use the appropriate element ID or class for your cart total
           }
         </script>
 

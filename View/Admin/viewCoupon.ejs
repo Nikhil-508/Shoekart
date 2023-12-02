@@ -1,0 +1,255 @@
+<%- include("../Layout/Adminlayout/admin_header") %>
+<body>
+  <div class="container-scroller">
+    <!-- partial:partials/_navbar.html -->
+          <%- include('../Layout/Adminlayout/admin_navbar') %>
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial:partials/_settings-panel.html -->
+          <%- include('../Layout/Adminlayout/admin_settingspanel') %>
+      <!-- partial -->
+      <!-- partial:partials/_sidebar.html -->
+          <%- include('../Layout/Adminlayout/admin_sidebar') %>
+          <link href="
+https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css
+" rel="stylesheet">
+          
+      <!-- partial -->
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Coupons</h4>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCouponModal">
+                        Add 
+                    </button>
+                  <div class="table-responsive pt-3">
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                            <th scope="col">No</th>
+                            <th scope="col">coupon code</th>
+                            <th scope="col">Expiry date</th>
+                            <th scope="col">Minimum purchase amount</th>
+                            <th scope="col">Maximum discount amount</th>
+                            <th scope="col">Percentage discount</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% couponData.forEach((couponData , i) =>{ %>
+                            <tr class="text-center align-middle">
+                                <th scope="row"><%= i + 1 %></th>
+                                <td><%= couponData.couponCode %></td>
+                                <% const date = couponData.expiryDate %>
+                                <td><%=moment(date).format('MMMM Do YYYY, h:mm:ss a') %> </td>
+                                <td><%= couponData.minPurchaseAmount %></td>
+                                <td><%=couponData.maxDiscount %></td>
+                                <td><%=couponData.percentageDiscount %></td>
+                                <td>
+                                    <button class="btn btn-warning " type="button" onclick="deleteCoupon('<%= couponData._id %>')" id="deleteCouponButton">Delete</button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+          </div>
+        </div>
+                <!-- Modal -->
+                <div class="modal fade" id="addCouponModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">Add coupon</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+        
+                                <form class="row g-3" id="couponForm" action="/admin/addCoupon" method="POST">
+                                    <div class="col-md-6">
+                                        <label for="couponCode" class="form-label">Coupon code</label>
+                                        <input type="text" class="form-control" id="couponCode" name="couponCode">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="expiryDate" class="form-label">Expiry date</label>
+                                        <input type="date" class="form-control" id="expiryDate" name="expiryDate">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="maxDiscount" class="form-label">Maximum discount</label>
+                                        <input type="text" class="form-control" id="maxDiscount" name="maxDiscount">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="minPurchaseAmount" class="form-label">Minimum purchase amount</label>
+                                        <input type="text" class="form-control" id="minPurchaseAmount" name="minPurchaseAmount">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="percentageDiscount" class="form-label">Percentage Discount</label>
+                                        <input type="text" class="form-control" id="percentageDiscount" name="percentageDiscount">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Add coupon</button>
+                                    </div>
+                                </form>
+        
+                                <div class="alert alert-warning" role="alert" id="alertDiv" style="display: none;">
+        
+                                </div>
+                                  
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <%- include('../Layout/Adminlayout/admin_footer') %>
+      </div>
+    </div>   
+  </div>
+
+
+  <script>
+
+    const form = document.getElementById('couponForm')
+    const inputs = form.querySelectorAll('input')
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault()
+        let nullFields = false
+        for (let i = 0; i < inputs.length; i++) {
+            if (inputs[i].value == "") {
+                nullFields = true
+                $('#alertDiv').show().html("All fields are required!!")
+                setTimeout(() => {
+                    $('#alertDiv').fadeOut('slow')
+                }, 1500)
+                break
+            }
+        }
+        console.log('checked nullfields ');
+        /*------Empty fields checking------*/
+        if (!nullFields) {
+            console.log('entering  to false case');
+            const url = '/admin/addCoupon'
+            const formData = new FormData(form)
+            fetch(url,
+                {
+                    method: 'post',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(Object.fromEntries(formData))
+                }
+            )
+                .then(async (response) => {
+                    const message = await response.json()
+                    console.log('this is response in fetchhhh', message.response);
+                    Swal.fire({
+                        position: 'bottom-end',
+                        icon: 'success',
+                        title: message.response,
+                        showConfirmButton: false,
+                        timer: 2000
+                    })
+                    location.reload();
+                    $('#reloadSection').load('/admin/viewCoupons #reloadSection');
+                    $('#addCouponModal').modal('hide')
+                })
+
+        }
+    })
+
+    /*-----delete coupon-----*/
+    let deleteCoupon = (couponId) => {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You want to delete the coupon?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes !'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const url = `/admin/deleteCoupon`;
+                const data = { couponId: couponId };
+                const json = JSON.stringify(data);
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: json
+                })
+                    .then((response) => {
+                        return response.json();
+                    })
+                    .then(async (data) => {
+                        await Swal.fire({
+                            position: 'center',
+                            icon: 'success',
+                            title: 'Deleted the coupon',
+                            showConfirmButton: false,
+                            timer: 2000
+                        })
+                        location.reload();
+
+                        setTimeout(() =>{
+                            $('#reloadSection').load('/admin/viewCoupons #reloadSection')
+                        } , 500 )
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
+            }
+        });
+    };
+
+
+
+
+    /*------Preventing the escape closing of modal-----*/
+    $(document).ready(function () {
+        $('#addCouponModal').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+    });
+
+
+</script>
+
+
+<script src="
+https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js
+"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+  <!-- plugins:js -->
+  <script src="vendors/js/vendor.bundle.base.js"></script>
+  <!-- endinject -->
+  <!-- Plugin js for this page -->
+  <script src="vendors/chart.js/Chart.min.js"></script>
+  <script src="vendors/datatables.net/jquery.dataTables.js"></script>
+  <script src="vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
+  <script src="js/dataTables.select.min.js"></script>
+
+  <!-- End plugin js for this page -->
+  <!-- inject:js -->
+  <script src="js/off-canvas.js"></script>
+  <script src="js/hoverable-collapse.js"></script>
+  <script src="js/template.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/todolist.js"></script>
+  <!-- endinject -->
+  <!-- Custom js for this page-->
+  <script src="js/dashboard.js"></script>
+  <script src="js/Chart.roundedBarCharts.js"></script>
+  <!-- End custom js for this page-->
+</body>
+
+</html>

@@ -14,6 +14,10 @@ userRouter.get("/",userController.getHome)
 userRouter.get("/login", auth.userAuth ,userController.getLogin)
 userRouter.post("/login", auth.userAuth ,userController.doLogin)
 
+//user signup
+userRouter.get("/signup",userController.getSignup)
+userRouter.post('/signup',userController.doSignUp)
+
 //forgotpassword handling
 userRouter.get("/forgotPassword",userController.getForgotPassword)
 userRouter.post("/forgotPassword",userController.forgotpasswordEmail)
@@ -21,7 +25,9 @@ userRouter.get("/resetPassword/:token",userController.getResetPage)
 userRouter.post("/resetPassword",userController.resetPassword)
 
 //get allshoes
-userRouter.get('/all-shoes',auth.realuserauth,userController.getAllshoes)
+userRouter.get('/products',auth.realuserauth,userController.getAllShoes)
+
+userRouter.get('/productsByCategory',userController.getproductsByCategory)
 
 //get singleproduct
 userRouter.get('/singleProduct/:productId',auth.realuserauth,userController.getSingleProduct)
@@ -34,10 +40,13 @@ userRouter.post('/updateQuantity',auth.realuserauth,userController.updateQuantit
 userRouter.post('/remove-from-cart/:proId',auth.realuserauth,userController.removeFromCart)
 
 //get checkout
-userRouter.post("/checkout/:proId",auth.realuserauth,userController.getCheckout)
+userRouter.get("/checkout",auth.realuserauth,userController.getCheckout)
 
 //placeorder
 userRouter.post("/placeOrder",auth.realuserauth,userController.placeOrder)
+
+//redeem coupon
+userRouter.post("/redeemCoupon",auth.realuserauth,userController.redeemCoupon)
 
 //succsespage rendering
 userRouter.get("/successfull",auth.realuserauth,userController.successPage)
@@ -50,6 +59,7 @@ userRouter.get("/successful",userController.getSuccesful)
 
 //orders
 userRouter.get('/orders',auth.realuserauth,userController.getorders)
+userRouter.post('/updateOrderStatus',auth.realuserauth,userController.userupdateOrderStatus)
 
 
 // user Profile management
@@ -72,12 +82,6 @@ userRouter.post('/user-changePassword',auth.realuserauth,userController.changePa
 
 //user logout
 userRouter.post('/logout',userController.doLogout)
-
-
-//user signup
-userRouter.get("/signup",userController.getSignup)
-userRouter.post('/signup',userController.doSignUp)
-
 
 // otp verification
 

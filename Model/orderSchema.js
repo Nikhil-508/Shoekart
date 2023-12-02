@@ -20,7 +20,8 @@ const orderSchema = new mongoose.Schema(
             required:true
         },
         date:{
-            type:DateOnly,
+            type:Date,
+            default:Date.now
           
         },
         product : [{

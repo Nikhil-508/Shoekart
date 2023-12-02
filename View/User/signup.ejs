@@ -75,21 +75,30 @@
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required>
     </div>
+
     <div class="form-group">
         <label for="phone">Phone:</label>
         <input type="number" id="phone" name="phone" required>
     </div>
+
     <div class="form-group">
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required>
     </div>
+
+    <div class="form-group">
+        <label for="password">Confirm Password:</label>
+        <input type="password" id="confirmpassword" name="confirmpassword" required>
+    </div>
     <div>
           <button class="btn btn-secondary" type="submit"  id="signup">SignUp</button>
        </div>
+
+
        <% 
        if(typeof message!=='undefined'){
         %>
-        <p style="color: green;"><%=message%></p>
+        <p style="color: rgb(232, 31, 20);"><%=message%></p>
         <%
        }
        %>

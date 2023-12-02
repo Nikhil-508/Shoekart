@@ -13,6 +13,10 @@ const Order = require('../Model/orderSchema');
 const orderSchema = require('../Model/orderSchema');
 const Razorpay = require('razorpay');
 const crypto = require('crypto')
+const mongoose = require('mongoose');
+const categories = require('../Model/catagorySchema')
+const Coupons = require('../Model/couponSchema');
+const path = require('path');
 
 //Razorpay instance
 
@@ -41,32 +45,42 @@ function validateUserInput(req, res, name, email, phone, password) {
 
     }
     if (!phoneRegex.test(phone)) {
-        return { error: 'Invalid phone number' };
+        return res.render('signup', { message: 'Invalid phone number' })
     }
 
     if (!passwordRegex.test(password)) {
         return res.render('signup', { message: "Invalid password" })
     }
 
+    // if (!passwordRegex.test(confirmpassword)) {
+    //     return res.render('signup', { message: "Invalid confirm password" })
+    // }
+
     return null; // No validation errors
 }
 
 
-const getHome = async (req, res) => {
+const getHome = async (req, res, next) => {
     try {
-        res.render('home')
+        const catData = await categories.find()
+        const proData = await Products.find().populate('category')
+
+        
+        res.render('home', { catData, proData })
 
     } catch (error) {
+        next(error)
         console.log(error.message);
 
     }
 }
 
-const getLogin = async (req, res) => {
+const getLogin = async (req, res, next) => {
     try {
         res.render('login')
 
     } catch (error) {
+        next(error)
         console.log(error.message);
     }
 }
@@ -91,123 +105,128 @@ const doLogin = async (req, res, next) => {
             res.redirect("/")
         }
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
 
-const getForgotPassword = async(req,res)=>{
+const getForgotPassword = async (req, res, next) => {
     try {
         res.render("forgotPassword")
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
-const forgotpasswordEmail = async(req,res)=>{
+const forgotpasswordEmail = async (req, res, next) => {
     try {
         const Email = req.body.email
-        const user = await Users.findOne({email:Email})
+        const user = await Users.findOne({ email: Email })
         console.log(user)
         console.log(Email);
-        if(!user){
-            res.render("forgotPassword",{message:"User not registered"})
+        if (!user) {
+            res.render("forgotPassword", { message: "User not registered" })
         }
-         // Generate a reset token
-    const resetToken = uuidv4();
+        // Generate a reset token
+        const resetToken = uuidv4();
 
-    // Save the reset token and its expiration date to the user's record
-    user.resetToken = resetToken;
-    user.resetTokenExpiration = Date.now() + 3600000; // Set an expiration time (e.g., 1 hour)
-    await user.save();
-    console.log(user);
+        // Save the reset token and its expiration date to the user's record
+        user.resetToken = resetToken;
+        user.resetTokenExpiration = Date.now() + 3600000; // Set an expiration time (e.g., 1 hour)
+        await user.save();
+        console.log(user);
 
-    //resetlink
-    const resetLink = `http://localhost:3000/resetPassword/${resetToken}`;
+        //resetlink
+        const resetLink = `http://localhost:3000/resetPassword/${resetToken}`;
 
-    const mailOptions = {
-        from: process.env.AUTH_EMAIL,
-        to: user.email,
-        subject: 'Password Reset Request',
-        html: `Click <a href="${resetLink}">here</a> to reset your password.`,
-      };
+        const mailOptions = {
+            from: process.env.AUTH_EMAIL,
+            to: user.email,
+            subject: 'Password Reset Request',
+            html: `Click <a href="${resetLink}">here</a> to reset your password.`,
+        };
 
-      transporter.sendMail(mailOptions, (error) => {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log('Password reset email sent.');
-        }
-      });
-  
-      res.render('forgotPassword', { message: 'Password reset email sent' });
+        transporter.sendMail(mailOptions, (error) => {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log('Password reset email sent.');
+            }
+        });
 
-        
+        res.render('forgotPassword', { message: 'Password reset email sent' });
+
+
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
 
-const getResetPage = async(req,res)=>{
+const getResetPage = async (req, res, next) => {
     try {
         const resetToken = req.params.token
-        res.render("resetPassword",{resetToken})
+        res.render("resetPassword", { resetToken })
     } catch (error) {
+        next(error)
         console.log(error);
+
     }
 }
 
 
-const resetPassword = async(req,res)=>{
+const resetPassword = async (req, res, next) => {
     try {
         const newPassword = req.body.newPassword;
         const confirmPassword = req.body.confirmPassword;
         const resetToken = req.body.token;
-        console.log(newPassword,"neww",confirmPassword);
-    
+        console.log(newPassword, "neww", confirmPassword);
+
         // Validate the new password
         if (newPassword !== confirmPassword) {
-          return res.render('resetPassword', {
-            message: 'Passwords do not match',
-            resetToken: resetToken,
-          });
+            return res.render('resetPassword', {
+                message: 'Passwords do not match',
+                resetToken: resetToken,
+            });
         }
-    
+
         // Implement the logic to verify the reset token and update the user's password
         // You should check the token's validity and expiration
-    
+
         // Example of updating the user's password (replace this with your actual logic)
         const user = await Users.findOne({ resetToken: resetToken });
-    
+
         if (!user || user.resetTokenExpiration < Date.now()) {
-          return res.render('resetPassword', {
-            message: 'Invalid or expired reset token',
-            resetToken: resetToken,
-          });
+            return res.render('resetPassword', {
+                message: 'Invalid or expired reset token',
+                resetToken: resetToken,
+            });
         }
-    
+
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(newPassword, salt)
         user.password = hashedPassword;
         user.resetToken = null;
         user.resetTokenExpiration = null;
         await user.save();
-    
+
         // Send an email to notify the user that the password has been successfully reset
         const mailOptions = {
-          from: process.env.AUTH_EMAIL,
-          to: user.email,
-          subject: 'Password Reset Successful',
-          text: 'Your password has been successfully reset.',
+            from: process.env.AUTH_EMAIL,
+            to: user.email,
+            subject: 'Password Reset Successful',
+            text: 'Your password has been successfully reset.',
         };
-    
+
         transporter.sendMail(mailOptions, (error) => {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log('Password reset success email sent.');
-          }
+            if (error) {
+                console.log(error);
+            } else {
+                console.log('Password reset success email sent.');
+            }
         });
         // console.log(resetToken,"before");
         res.render('resetPassword', { message: 'Password reset successful', resetToken: resetToken });
@@ -215,15 +234,18 @@ const resetPassword = async(req,res)=>{
 
 
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
-const getSignup = async (req, res) => {
+const getSignup = async (req, res, next) => {
     try {
         res.render('signup')
     } catch (error) {
+        next(error)
         console.log(error.message);
+
     }
 }
 
@@ -233,25 +255,31 @@ const doSignUp = async (req, res, next) => {
         const email = req.body.email
         const phone = req.body.phone
         const password = req.body.password
+        const newPassword = req.body.confirmpassword
 
         const validationError = validateUserInput(req, res, name, email, phone, password);
-        console.log(req.body);
-
 
         if (validationError) {
             return res.status(400).send(validationError);
         }
-        console.log(req.body);
-        const userMatch = await Users.findOne({ name: name })
+
+        //confirm password
+        if (password != newPassword) {
+            return res.render('signup', { message: "Passsword do not match" })
+        }
+        //check weather user exist or not
+        const userMatch = await Users.findOne({ email: email })
         if (!userMatch) {
             const salt = await bcrypt.genSalt(10)
             const hashedPassword = await bcrypt.hash(password, salt)
+            const hashedNewPassword = await bcrypt.hash(newPassword, salt)
             const user = {
                 name: name,
                 password: hashedPassword,
                 email: email,
                 phone: phone
             }
+
             const userData = new Users(user)
             await userData.save()
             if (userData) {
@@ -263,12 +291,13 @@ const doSignUp = async (req, res, next) => {
                 res.status(404).json({ error: "error in sign up" })
             }
         } else {
-            res.status(404).json({ error: "user exists" })
+            return res.render('signup', { message: "User Already Exists" })
         }
 
-    } catch (err) {
-        console.log(err);
-        res.status(500)
+    } catch (error) {
+        next(error)
+        console.log(error);
+
     }
 }
 
@@ -284,7 +313,9 @@ const doLogout = (req, res, next) => {
         }
 
     } catch (error) {
+        next(error)
         console.log(error.message);
+
     }
 }
 
@@ -313,7 +344,7 @@ const sendOtpVerificationEmail = async ({ _id, email }, res) => {
             to: email,
             subject: "Verify your Email",
             html: `<p>Enter <b>${otp}</b>in the app to verify your emailaddress and complete the verification</p>
-                    <p>This code <b> expires in 1 hour</b>.</p>`
+                    <p>This code <b> expires in 15 minutes</b>.</p>`
         }
         // Hash the OTP
         const saltRounds = 10;
@@ -322,7 +353,7 @@ const sendOtpVerificationEmail = async ({ _id, email }, res) => {
             userID: _id,
             otp: hashedOTP,
             createdAt: Date.now(),
-            expireAt: Date.now() + 3600000,
+            expireAt: Date.now() + 900000,
         });
 
         //save the otp
@@ -333,10 +364,7 @@ const sendOtpVerificationEmail = async ({ _id, email }, res) => {
         await transporter.sendMail(mailOption);
     } catch (error) {
         console.log(error)
-        res.status(500).json({
-            message: error.message
 
-        });
 
     }
 }
@@ -345,19 +373,21 @@ const sendOtpVerificationEmail = async ({ _id, email }, res) => {
 
 //....Getting OTP page....
 
-const getOtppage = async (req, res) => {
+const getOtppage = async (req, res, next) => {
     try {
         const userId = req.query.userId; // Use req.query to retrieve query parameters
         console.log(userId);
         res.render('otpPage', { userId });
     } catch (error) {
+        next(error)
         console.log(error);
+
     }
 }
 
 // OTP valid checking
 
-const checkOtpValid = async (req, res) => {
+const checkOtpValid = async (req, res, next) => {
     try {
         const { OTP, ID } = req.body
         console.log(ID);
@@ -392,149 +422,329 @@ const checkOtpValid = async (req, res) => {
         return res.redirect('/login')
 
     } catch (error) {
+        next(error)
         console.log(error);
-        res.status(500).send('internal server error')
+
+
 
     }
 }
 
 
 
-const getAllshoes = async (req, res) => {
+const getAllShoes = async (req, res, next) => {
     try {
-        const products = await Products.find({})
-        if (products) {
-            res.render("allShoes", { products })
+        const page = parseInt(req.query.page) || 1;
+        const productsPerPage = 3;
+        const categoryId = req.query.category;
+        const gender = req.query.gender;
+
+        console.log(req.query);
+
+        let query = {};
+
+        if (categoryId) {
+            // If category filter is provided, add it to the query
+            query = { 'category': categoryId };
         }
 
+        const catData = await categories.find()
+
+        // Calculate the starting index based on the page number
+        const startIndex = (page - 1) * productsPerPage;
+
+        // Fetch products from the database based on the calculated startIndex and filters
+        const products = await Products.find(query)
+            .skip(startIndex)
+            .limit(productsPerPage);
+
+        const filteredProducts = products.filter(product => !product.is_delete);
+
+        console.log(filteredProducts);
+
+        //  totalProducts count
+        const totalProducts = await Products.countDocuments(query);
+
+        const populatedProducts = await Products.populate(products, { path: 'category' });
+
+        // Calculate the total number of pages
+        const totalPages = Math.ceil(totalProducts / productsPerPage);
+
+        // Fetch the category names for rendering in the UI
+        const category = await categories.find();
+
+        console.log("check");
+        // if(!categoryId && !gender){
+        //     res.render('allShoes',{products, currentPage: page,totalPages,category})
+        // }
+        // Render the "allShoes" template with the retrieved products, current page, total pages, filters, and categories
+        // const filteredProducts = products.filter(product => !product.is_delete);
+        console.log(filteredProducts);
+        res.render("allShoes", { filteredProducts, products, currentPage: page, populatedProducts, catData, totalPages, categoryId, gender, category });
+
     } catch (error) {
+        next(error)
+        console.log(error.message);
+
+    }
+};
+
+
+
+const getproductsByCategory = async (req, res, next) => {
+    try {
+
+
+        const catId = req.query.catId
+        const gender = req.query?.gender
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = 2; //products per page
+
+
+        const catData = await categories.find()
+        console.log(req.query, "quuryyyyyyy");
+        let products
+
+        if (gender) {
+            products = await Products.find({ category: catId, gender: gender })
+                .skip((page - 1) * pageSize)
+                .limit(pageSize)
+                .populate('category')
+        } else {
+            products = await Products.find({ category: catId })
+                .skip((page - 1) * pageSize)
+                .limit(pageSize)
+                .populate('category')
+        }
+
+        // const filteredProducts = products.filter(product=>{!product.is_delete})
+
+        console.log(products, "prdct prdcteeeeyy");
+
+        const totalProducts = await Products.countDocuments({ category: catId, gender: gender })
+        const totalPages = Math.ceil(totalProducts / pageSize)
+
+
+        res.render("allShoes", { products, catData, catId, gender, currentPage: page, totalPages })
+    } catch (error) {
+        next(error)
         console.log(error);
-        res.status(500).send("Internal Server Error");
     }
 }
 
 
 
-const getSingleProduct = async (req, res) => {
+const getSingleProduct = async (req, res, next) => {
     try {
+        const catData = await categories.find()
         const productId = req.params.productId
         const productData = await Products.find({ _id: productId });
-        console.log(productData);
-        res.render('singleProduct', { productData })
+        // console.log(productData);
+        res.render('singleProduct', { productData, catData })
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
 
 
-const getCart = async (req, res) => {
+const getCart = async (req, res, next) => {
     try {
         const userId = req.session.userId
-        const response = await Users.findOne({ _id: userId }).populate("cart.product").select(["cart", "totalCartAmount", "name"])
-        // console.log(response.cart);
-        res.render('myCart', { response })
+        const product = await Products.find()
+        const catData = await categories.find()
+        // const response = await Users.findOne({ _id: userId }).populate("cart.product").select(["cart", "totalCartAmount", "name"])
+        const response = await Users.findOne({ _id: userId })
+            .populate({
+                path: 'cart.product',
+                model: 'products',
+                populate: {
+                    path: 'category',
+                    model: 'categories'
+                }
+            })
+            .select(['cart', 'totalCartAmount', 'name']);
+
+        
+        res.render('myCart', { response, catData, product })
 
     } catch (error) {
+        next(error)
         console.log(error);
+
     }
 }
 
 
-const updateQuantity = async (req, res) => {
+const updateQuantity = async (req, res, next) => {
     try {
         const userId = req.session.userId;
         const productId = req.body.productId;
         const newQuantity = req.body.quantity;
 
-        // Update the quantity in the user's cart
+        const productData = await Products.findOne({ _id: productId })
+
+
+        const product = await Products.findById(productId).populate('category')
+        const userData = await Users.findById( userId )
+        let totalCartAmount = userData.totalCartAmount
+        const newProductAmount = product.price * newQuantity
+        let totalProductDiscount = 0
+        if (product.offerpercentage) {
+            totalProductDiscount += Math.floor((newProductAmount * product.offerpercentage / 100))
+        }
+        if (product.category.categoryPercentageOffer) {
+            totalProductDiscount += Math.floor((newProductAmount * product.category.categoryPercentageOffer / 100))
+        }
+        console.log(totalProductDiscount, "discountttttt")
+        // Update the quantity and productamount in the user's cart
         const user = await Users.findOneAndUpdate(
             { _id: userId, "cart.product": productId },
-            { $set: { "cart.$.quantity": newQuantity } },
+            {
+                $set: {
+                    "cart.$.quantity": newQuantity,
+                    "cart.$.productAmount": newProductAmount,
+                    // totalCartAmount: totalCartAmount + productData.price
+                },
+            },
             { new: true }
         );
 
         // Calculate the new product amount
-        const product = user.cart.find((item) => item.product.toString() === productId);
-        const newProductAmount = product.quantity * product.productAmount;
+        // const product = user.cart.find((item) => item.product.toString() === productId);
+        // const newProductAmount = product.quantity * product.productAmount;
+        // const offerPercentage = product.offerpercentage
+        // const productPrice = product.productAmount
 
-        // Update the totalCartAmount in the user's schema
+        // // Update the totalCartAmount in the user's schema
         user.totalCartAmount = user.cart.reduce((total, item) => total + item.productAmount, 0);
         await user.save();
 
-        res.json({ newProductAmount });
+        // res.json({ offerPercentage, productPrice });
+        res.json({ message: "hai heloss", newProductAmount, totalProductDiscount,totalCartAmount: user.totalCartAmount, productId })
     } catch (error) {
+        next(error)
         console.log(error);
-        res.status(500).json({ error: "Error updating quantity" });
     }
 };
 
 
 
 
-const addToCart = async (req, res) => {
+const addToCart = async (req, res, next) => {
     try {
         const userId = req.session.userId
         const productId = req.params.productId
         const productData = await Products.findOne({ _id: productId })
         console.log(productData);
         console.log(productId, userId);
-        const response = await Users.updateOne({ _id: userId }, { $push: { cart: { product: productId, productAmount: productData.price } }, $inc: { totalCartAmount: productData.price } })
-        console.log(response)
+        const userData = await Users.findById( userId )
+        let totalCartAmount = userData.totalCartAmount
+        const response = await Users.updateOne(
+            { _id: userId },
+            {
+                $push: {
+                    cart: { product: productId, productAmount: productData.price },
+                },
+                $set: {
+                    totalCartAmount: totalCartAmount + productData.price ,
+                },
+            }
+        );
+        console.log(response,"rspnssss")
         res.redirect('/mycart')
     } catch (error) {
-        358
+        next(error)
         console.log(error);
     }
 }
 
 
-const removeFromCart = async (req, res) => {
+const removeFromCart = async (req, res, next) => {
     try {
         const deleteproduct = req.params.proId
         const currentUser = await Users.findById(req.session.userId);
 
         const itemIndex = currentUser.cart.findIndex((item) => item.product.toString() === deleteproduct);
-        currentUser.cart.splice(itemIndex, 1);
-        await currentUser.save();
+        if(itemIndex !== -1){
+            const removedProductAmount = currentUser.cart[itemIndex].productAmount
+            currentUser.cart.splice(itemIndex, 1);
+            currentUser.totalCartAmount -= removedProductAmount
+            await currentUser.save();
+        }
 
         res.redirect("/mycart");
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
 
-const getUserProfile = async (req, res) => {
+const getUserProfile = async (req, res, next) => {
     try {
-        const user = await Users.findById(req.session.userId)
+        const userId = req.session.userId
+        const user = await Users.findById(userId)
+        const catData = await categories.find()
         const addresses = await address.find({ UserId: req.session.userId })
-        // console.log(addresses);
+
+        //for wallet amount
+        // const orders = await Order.find({ userId: userId, status: { $in: ["Return", "Cancelled"] } })
+        // const orderAmount = orders.reduce((sum, order) => {
+        //     return sum + order.total
+        // }, 0)
+
+        // await Users.findByIdAndUpdate(userId, { $set: { wallet: orderAmount } });
+
+        //wallet transaction
+        const walletHistory = await getUserWalletHistory(userId)
+
+
         if (!user) {
             res.status(404).send("user not found")
         }
-        res.render("userProfile", { user, addresses })
-        // console.log(user);
-
+        res.render("userProfile", { user, addresses, catData, walletHistory })
     } catch (error) {
+        next(error)
         console.log(error);
 
     }
 }
 
 
-const getEditProfile = async (req, res) => {
+//wallet history gettng function
+
+const getUserWalletHistory = async (userId) => {
     try {
+        const user = await Users.findById(userId);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        const walletHistory = user.walletTransactions;
+        return walletHistory;
+    } catch (error) {
+        console.log(error)
+    }
+};
+
+
+
+const getEditProfile = async (req, res, next) => {
+    try {
+        const catData = await categories.find()
         const userId = req.query.userId;
         const currentUser = await Users.findById(userId)
-        res.render('editPersonalInfo', { currentUser })
+        res.render('editPersonalInfo', { currentUser, catData })
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
 
-const EditProfile = async (req, res) => {
+const EditProfile = async (req, res, next) => {
     try {
         console.log(req.body);
         const Updateinfo = await Users.updateOne({ _id: req.params.userId }, {
@@ -547,23 +757,26 @@ const EditProfile = async (req, res) => {
 
         res.redirect('/user-profile')
     } catch (error) {
+        next(error)
         console.log(error);
 
     }
 }
 
 
-const getUserAddAddress = async (req, res) => {
+const getUserAddAddress = async (req, res, next) => {
     try {
-        res.render('addAddress')
+        const catData = await categories.find()
+        res.render('addAddress', { catData })
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
 
 
-const UserAddAddress = async (req, res) => {
+const UserAddAddress = async (req, res, next) => {
     try {
 
         const { housename, pincode, post, district } = req.body
@@ -580,26 +793,28 @@ const UserAddAddress = async (req, res) => {
         console.log(newAddress);
         res.redirect('/user-profile')
     } catch (error) {
+        next(error)
         console.log(error.message);
     }
 }
 
 
 
-const getEditAddress = async (req, res) => {
+const getEditAddress = async (req, res, next) => {
     try {
-
+        const catData = await categories.find()
         const Address = await address.findById(req.params.addressId)
         console.log(Address)
-        res.render('EditAddress', { Address })
+        res.render('EditAddress', { Address, catData })
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
 
 
-const EditAddress = async (req, res) => {
+const EditAddress = async (req, res, next) => {
 
     try {
         console.log(req.body);
@@ -615,76 +830,106 @@ const EditAddress = async (req, res) => {
         console.log(UpdateAddress);
         res.redirect('/user-profile');
     } catch (error) {
+        next(error)
         console.log(error);
 
     }
 }
 
 
-const DeleteAddress = async (req, res) => {
+const DeleteAddress = async (req, res, next) => {
     try {
         const addressId = req.params.addressId
         const deleteAddress = await address.deleteOne({ _id: addressId })
         // console.log(deleteAddress)
         res.redirect('/user-profile');
 
-
     } catch (error) {
+        next(error)
         console.log(error);
-
     }
 }
 
-const getChangePassword = async(req,res)=>{
+const getChangePassword = async (req, res, next) => {
     try {
         const UserId = req.session.userId
         console.log(UserId);
         const user = await Users.findById(UserId)
         console.log(user);
-        res.render('changePassword',{user})
+        res.render('changePassword', { user })
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
-const changePassword  = async(req,res)=>{
+const changePassword = async (req, res, next) => {
     try {
         const userId = req.session.userId
         // console.log(userId);
         const user = await Users.findById(userId)
         // console.log(req.body);
-        if(!user){
+        if (!user) {
             return res.status(404).send("User not Found")
         }
-        const{oldPassword,newPassword,confirmPassword} = req.body
+        const { oldPassword, newPassword, confirmPassword } = req.body
         //password comparing
-        const passwordMatch = await bcrypt.compare(oldPassword,user.password)
+        const passwordMatch = await bcrypt.compare(oldPassword, user.password)
 
-        if(!passwordMatch){
-            return res.render("changePassword",{message:"Oldpassword is incorrect"})
+        if (!passwordMatch) {
+            return res.render("changePassword", { message: "Oldpassword is incorrect" })
         }
         // Check if the new password and confirmation match
-        if(newPassword !== confirmPassword){
-            return res.render("changePassword",{message:"New passwords do not match"})
+        if (newPassword !== confirmPassword) {
+            return res.render("changePassword", { message: "New passwords do not match" })
         }
 
-        const hashedPassword = await bcrypt.hash(newPassword,10)  // second parameter "10" determines how many round it done for securing password
+        const hashedPassword = await bcrypt.hash(newPassword, 10)  // second parameter "10" determines how many round it done for securing password
         //upadating password
         user.password = hashedPassword
         await user.save()
-        res.render("changePassword",{user,message:"Password changed successfully"})   
+        res.render("changePassword", { user, message: "Password changed successfully" })
 
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
 
 
-const getCheckout = async (req, res) => {
+const getCheckout = async (req, res, next) => {
     try {
+        // const response = await Users.findOne({ _id: userId })
+        //     .populate({
+        //         path: 'cart.product',
+        //         model: 'products',
+        //         populate: {
+        //             path: 'category',
+        //             model: 'categories'
+        //         }
+        //     })
+        //     .select(['cart', 'totalCartAmount', 'name']);
         const userId = req.session.userId;
-        const user = await Users.findOne({ _id: userId }).populate("cart.product").select(["cart", "totalCartAmount", "name"]);
+        const catData = await categories.find()
+        const product = await Products.find()
+        const coupon = await Coupons.find()
+        console.log(coupon,"cppnnnn")
+        // const lastPrice = req.body.lastPrice
+        // const finalPrice = req.body.finalPrice
+
+        // console.log(finalPrice, "finalllllll")
+
+        const user = await Users.findOne({ _id: userId }).populate({
+            path: 'cart.product',
+            model: 'products',
+            populate: {
+                path: 'category',
+                model: 'categories'
+            }
+        }).select(["cart", "totalCartAmount", "name", "wallet"]);
+        // console.log(user.cart[0].product);
+        // console.log(user,"userrrrrrrrrrrrr")
         if (!user) {
             throw new Error("User not found");
         }
@@ -692,56 +937,156 @@ const getCheckout = async (req, res) => {
         if (!addresses) {
             throw new Error("Addresses not found");
         }
-        res.render("checkOut", { response: user, addresses });
+        res.render("checkOut", { response: user, addresses, catData, product, finalPrice: '00',coupon });
     } catch (error) {
+        next(error)
         console.error(error);
-        res.status(500).send("Internal Server Error");
     }
 }
 
 
-const getorders = async (req, res) => {
+const getorders = async (req, res, next) => {
     try {
         const userId = req.session.userId
+        const catData = await categories.find()
         console.log(userId);
-        const orders = await Order.find({userId:userId}).populate([
+        const orders = await Order.find({ userId: userId }).populate([
             { path: 'userId' },
             { path: 'product.productId' },
         ]);
-        console.log(orders);
-        res.render('orders', { orders })
+        res.render('orders', { orders, catData })
     } catch (error) {
-        console.log(error);
+        next(error)
+        console.log(error)
+    }
+}
+
+
+const userupdateOrderStatus = async (req, res, next) => {
+    try {
+        const { orderId, status } = req.body;
+        const userid = req.session.userId
+        const user = await Users.findById(userid)
+
+        // console.log(orderId, status);
+
+        // Validate the status to make sure it's a valid value
+        const validStatusValues = ['Shipped', 'Delivered', 'Processing', 'Cancelled', 'Return'];
+        if (!validStatusValues.includes(status)) {
+            return res.status(400).json({ success: false, error: 'Invalid status value' });
+        }
+
+        // Update the order status in the database
+        const updatedOrder = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
+        
+
+        if (updatedOrder.status === "Return") {
+            user.wallet += updatedOrder.total;
+            await user.save()
+
+            const newTransaction = {
+                amount: updatedOrder.total,
+                type: "Credit",
+                date: new Date(),
+            };
+            
+            await Users.findByIdAndUpdate(updatedOrder.userId, { $push: { walletTransactions: newTransaction } });
+        }
+
+
+        if (updatedOrder) {
+            res.redirect('/orders')
+            // res.json({ success: true, updatedOrder });
+        } else {
+            res.render('orders', { message: 'Order not found or status not updated' })
+        }
+    } catch (error) {
+        next(error)
+        console.error(error);
     }
 }
 
 const successPage = async (req, res) => {
     try {
-        res.render("successPage")
+        const catData = await categories.find()
+        res.render("successPage",catData)
     } catch (error) {
         console.log(error);
     }
 }
 
 
-const placeOrder = async (req, res) => {
+const placeOrder = async (req, res, next) => {
     try {
-        const { addressradio, productId, productPrice, productTotalAmount, productQuantity, orderAmount, paymentradio } = req.body;
-        console.log(
-            addressradio,
-            productId,
-            productPrice,
-            productTotalAmount,
-            productQuantity,
-            orderAmount,
-            paymentradio, 'req.body'
-        )
-        const productIds = Array.isArray(productId) ? productId : [productId];  // Ensure productId is always an array
-        if (paymentradio === "COD") {
+        const { addressradio, productId, productPrice, productTotalAmount, productQuantity, orderAmount, paymentradio,finalAmount } = req.body;
+        // console.log(finalAmount,"finallyyyy")
+        // console.log(productTotalAmount,"totaleeee")
+        // console.log(orderAmount,"orderAmount")
 
+        const catData = await categories.find()
+
+        if (!paymentradio) {
+            return res.render('checkOut', { message: "Select your payment Type" })
+        }
+
+        if (!addressradio) {
+            return res.render('checkOut', { message: "Select Your Address" })
+        }
+
+        const productIds = Array.isArray(productId) ? productId : [productId];  // Ensure productId is always an array
+
+        if (paymentradio === "Wallet") {                   //>>>>>>>> Wallet <<<<<<<<<<<
+            // console.log("startttttttt") 
+            const orderId = `orderId-${uuidv4()}`.substring(0, 40)
+            let formattedDate = moment().format('ddd MMM DD YYYY')
+        
+            const User = await Users.findById(req.session.userId)
+        
+            let savedOrder; // Declare savedOrder outside the block
+        
+            if (User.wallet >= orderAmount[0]) {
+                User.wallet -= orderAmount[0]
+                // console.log("wallet discounteddddd")
+                const transaction = {
+                    type: "Debit",
+                    amount: orderAmount[0],
+                    date: new Date()
+                }
+                // console.log("User.wallet after deduction:", User.wallet);
+                User.walletTransactions.push(transaction)
+                
+        
+                await User.save();
+        
+                const order = new Order({
+                    userId: req.session.userId,
+                    delilveryAddress: addressradio,
+                    orderId,
+                    date: new Date(),
+                    product: productIds.map((id, index) => ({
+                        productId: id,
+                        quantity: parseInt(productQuantity[index], 10),
+                        price: parseInt(productPrice[index], 10),
+                        totalProductAmount: parseInt(productTotalAmount[index], 10),
+                        orderStatus: "pending"
+                    })),
+                    total: parseInt(orderAmount[0], 10),
+                    paymentType: paymentradio,
+                });
+        
+                savedOrder = await order.save();
+            } else {
+                res.json({ success: false, message: "Insufficient balance in your wallet" })
+            }
+        
+            if (savedOrder) {
+                res.json({ success: true });
+            }
+        }
+                 else if (paymentradio === "COD") {                  //>>>>>>>> C O D <<<<<<<<<<<
             // Create an instance of the order using the schema
             const orderId = `orderId-${uuidv4()}`.substring(0, 40)
-            let  formattedDate = moment().format('ddd MMM DD YYYY');
+            let formattedDate = moment().format('ddd MMM DD YYYY');
             const order = new Order({
                 userId: req.session.userId,
                 delilveryAddress: addressradio,
@@ -759,14 +1104,16 @@ const placeOrder = async (req, res) => {
             });
             const savedOrder = await order.save();
             if (savedOrder) {
+
                 res.json({ success: true })
             }
-        } else if (paymentradio === "Online") {
+        } else if (paymentradio === "Online") {     
+            console.log("onlinneeeeeeee")              //>>>>>>>> Online <<<<<<<<<<<
             // const orderId = `orderId-${uuidv4()}`.substring(0,40)
             const orderId = `orderId-${uuidv4()}`.substring(0, 40)
             req.session.orderId = orderId
             const options = {
-                amount: orderAmount,  // amount in the smallest currency unit
+                amount: orderAmount[0],  // amount in the smallest currency unit
                 currency: "INR",
                 receipt: orderId
             };
@@ -775,16 +1122,16 @@ const placeOrder = async (req, res) => {
                 if (err) {
                     console.log(err, 'order error from rezor pay');
                 } else {
-                    console.log(
-                        addressradio,
-                        productId,
-                        productPrice,
-                        productTotalAmount,
-                        productQuantity,
-                        orderAmount,
-                        paymentradio,
-                        "order insider razor payyyyyyyyyyyyyyy"
-                    )
+                    // console.log(
+                    //     addressradio,
+                    //     productId,
+                    //     productPrice,
+                    //     productTotalAmount,
+                    //     productQuantity,
+                    //     orderAmount[0],
+                    //     paymentradio,
+                    //     "order insider razor payyyyyyyyyyyyyyy"
+                    // )
 
                     const order = new Order({
                         userId: req.session.userId,
@@ -798,12 +1145,13 @@ const placeOrder = async (req, res) => {
                             totalProductAmount: parseInt(productTotalAmount[index], 10),
                             orderStatus: 'pending', //  set the initial status here
                         })),
-                        total: parseInt(orderAmount, 10),
+                        total: parseInt(orderAmount[0], 10),
                         paymentType: paymentradio,
                     });
+                   
                     const savedOrder = await order.save()
                     if (savedOrder) {
-                        console.log(savedOrder);
+                        // console.log(savedOrder);
                         res.json({ success: false, order: razorOrder, orderId: savedOrder._id })
                     }
 
@@ -814,24 +1162,85 @@ const placeOrder = async (req, res) => {
 
 
     } catch (error) {
+        next(error)
         console.log(error);
-        // Handle the error, possibly by sending an error response to the client.
-        res.status(500).json({ error: 'Internal server error' });
+        
     }
 };
 
 
-const getSuccesful = async (req, res) => {
+const redeemCoupon = async (req, res, next) => {
     try {
-        res.render('successPage')
+        console.log("stratsssssssss couponn")
+        
+            const userid = req.session.userId
+            const catData = await categories.find()
+            const couponCode = req.body.couponCode
+            const userData = await Users.findOne({ _id: userid })
+            const coupon = await Coupons.findOne({ couponCode: couponCode })
+            console.log(coupon,"cpncdeeeeeeee")
+
+            //>>>>>>>>>>>>> coupon checking <<<<<<<<<<
+
+            const totalCartAmount = userData.totalCartAmount
+            const currentDate = new Date()
+            if (!coupon) {
+                return res.json({ error: "No coupon exists!!!" })
+            } else {
+                const expiryDate = coupon.expiryDate
+                const minPurchaseAmount = coupon.minPurchaseAmount
+                const maxDiscountPercentage = coupon.percentageDiscount / 100
+                const maxDiscountAmount = coupon.maxDiscount
+                const isClaimed = await Coupons.findOne({ couponCode: couponCode, ClaimedUsers: { $elemMatch: { userId: userid } } })
+                console.log(isClaimed,"couponnnclaimmmm")
+                if (isClaimed) {
+                    return res.json({ claimed: "Already claimed" })
+                } else {
+                    if (currentDate <= expiryDate) {
+                        if (totalCartAmount >= minPurchaseAmount) {
+
+                            const availableDiscountAmount = totalCartAmount * maxDiscountPercentage
+                            let discountGained
+                            if (availableDiscountAmount >= maxDiscountAmount) {
+                                discountGained = maxDiscountAmount
+                            } else {
+                                discountGained = availableDiscountAmount
+                            }
+                            const oldCartAmount = totalCartAmount
+                            const newTotalCartAmount = totalCartAmount - discountGained
+
+                            const discountAmount = oldCartAmount - newTotalCartAmount
+                            return res.json({ message: "Coupon Applied", oldCartAmount: oldCartAmount, newTotalCartAmount: newTotalCartAmount, couponCode: couponCode, discountAmount: discountAmount,catData })
+                        } else {
+                            return res.json({ minimumAmount: `Minimum purchase amount is Rs.${minPurchaseAmount}` })
+                        }
+                    } else {
+                        return res.json({ couponExpired: "The coupon has expired !!!" })
+                    }
+                }
+
+            }
+       
     } catch (error) {
+        next(error)
+        console.log(error)
+    }
+}
+
+
+const getSuccesful = async (req, res, next) => {
+    try {
+        const catData = await categories.find()
+        res.render('successPage',catData)
+    } catch (error) {
+        next(error)
         console.log(error);
     }
 }
 
 
 
-const verifyPayment = async (req, res) => {
+const verifyPayment = async (req, res, next) => {
     try {
         console.log(req.body, "dbbbbbbbbbbdddddddddddyyyyyyyyyyyyyy");
         const { response, order, orderId } = req.body
@@ -864,6 +1273,7 @@ const verifyPayment = async (req, res) => {
 
 
     } catch (error) {
+        next(error)
         console.log(error);
     }
 }
@@ -886,7 +1296,8 @@ module.exports = {
     doLogout,
     getOtppage,
     checkOtpValid,
-    getAllshoes,
+    getAllShoes,
+    getproductsByCategory,
     getCart,
     updateQuantity,
     addToCart,
@@ -894,7 +1305,9 @@ module.exports = {
     getUserProfile,
     getCheckout,
     getorders,
+    userupdateOrderStatus,
     placeOrder,
+    redeemCoupon,
     verifyPayment,
     getSuccesful,
     getSingleProduct,

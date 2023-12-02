@@ -44,32 +44,38 @@
                                 <!-- Display product information here -->
                                 <p>Product Name: <%= product.productId.name %></p>
                                 <p>Quantity: <%= product.quantity %></p>
-                                <p>Price: $<%= product.price %></p>
+                                <p>Price: Rs.<%= product.productId.price %></p>
                                 <!-- Add more product details as needed -->
                               <% } %>
                             </td>
                             <td><%= order.delilveryAddress %></td>
                             <td><%= order.paymentType %></td>
                             <td><%= order.date %></td>
-                            <td>$<%= order.total %></td>
+                            <td>Rs.<%= order.total %></td>
                             <td>
-                            <div class="dropdown">
-                              <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <%= order.status %>
-                              </button>
-                              <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Pending</a></li>
-                                <li><a class="dropdown-item" href="#">Cancelled</a></li>
-                                <li><a class="dropdown-item" href="#">Delivered</a></li>
-                              </ul>
-                            </div>
-                          </td>
+                              <form action="/admin/updateOrderStatus" method="post" >
+                                <input type="hidden" name="orderId" value="<%= order.id %>" />
+                                <div class="dropdown">
+                                  <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <%= order.status %>
+                                    <% if (order.status == "Delivered") { %>
+                                      <!-- <button  type="submit" name="status" >Delivered</button> -->
+                                      <%  } else {  %>
+                                  </button>
+                                  <ul class="dropdown-menu">
+                                    <li><button class="dropdown-item" type="submit" name="status" value="Shipped">Shipped</button></li>
+                                    <li><button class="dropdown-item" type="submit" name="status" value="Delivered">Delivered</button></li>
+                                    <li><button class="dropdown-item" type="submit" name="status" value="Processing">Processing</button></li>
+                                    <li><button class="dropdown-item" type="submit" name="status" value="Cancelled">Cancelled</button></li>
+                                  </ul>
+                                  <% }  %>
+                                </div>
+                              </form>
+                            </td>
                           </tr>
                         <% } %>
                       </tbody>
                     </table>
-                    
-                    
                   </div>
                 </div>
               </div>
@@ -88,6 +94,33 @@
   </div>
   <!-- container-scroller -->
 
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+
+
+  <!-- <script>
+    document.getElementById('orderStatusSelect').addEventListener('change', function() {
+      var selectedStatus = this.value;
+
+      $.ajax({
+        type: 'POST',
+        url: '/updateOrderStatus',
+        data: {
+          status: selectedStatus,
+          userId: '<%= orders.userId %>',
+          orderId: '<%= orders._id %>',
+        },
+       success: function(response) {
+          document.getElementById("orderStatusSelect").textContent = selectedStatus;
+        },
+        error: function(error) {
+          document.getElementById("status-error").textContent = error.responseJSON.message;
+        }
+      }); 
+    });
+
+  </script> -->
+
+
   <!-- plugins:js -->
   <script src="vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
@@ -97,7 +130,10 @@
   <script src="vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
   <script src="js/dataTables.select.min.js"></script>
 
+  <!-- bootstrap -->
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
 
   <!-- End plugin js for this page -->
   <!-- inject:js -->
