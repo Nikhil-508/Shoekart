@@ -21,14 +21,16 @@
                     <p class="card-description">
                       Add Categories
                     </p>
-                    <form class="forms-sample" action="/admin/add-categories" method="post" >
+                    <form class="forms-sample" id="addCategoryForm" action="/admin/add-categories" method="post" >
                       <div class="form-group">
                         <label for="name">Category Name</label>
                         <input name="name" type="text" class="form-control" id="name" placeholder="Name">
+                        <div id="nameError" style="color: red;"></div>
                       </div>
                       <div class="form-group">
                         <label for="exampleTextarea1">Description</label>
                         <textarea name="description" class="form-control" id="exampleTextarea1" rows="4"></textarea>
+                        <div id="descriptionError" style="color: red;"></div>
                       </div>
                        <!-- =========== OFFER ============= -->
                        <div class="form-group">
@@ -41,9 +43,10 @@
                   
                           <label for="endDate">End Date:</label>
                           <input type="date" name="endDate" id="endDate">
+                          <div id="offerError" style="color: red;"></div>
                       </div>
                       <button type="submit" class="btn btn-primary mr-2">Submit</button>
-                      <button class="btn btn-light">Cancel</button>
+                      <button type="button" class="btn btn-light" id="cancelButton">Cancel</button>
                       
                       <% 
                       if(typeof message!=='undefined'){
@@ -69,6 +72,75 @@
     <!-- page-body-wrapper ends -->
   </div>
   <!-- container-scroller -->
+  <script>
+      document.getElementById("cancelButton").addEventListener("click", function () {
+        // Redirect to the category page
+        window.location.href = "/admin/categories";
+      });
+    </script>
+
+  <script>
+    const addCategoryForm = document.getElementById("addCategoryForm");
+    const nameInput = document.getElementById("name");
+    const nameError = document.getElementById("nameError");
+
+    const descriptionInput = document.getElementById("exampleTextarea1");
+    const descriptionError = document.getElementById("descriptionError");
+
+    const offerInput = document.getElementById("ctgrydiscountPercentage");
+    const offerError = document.getElementById("offerError");
+
+    function validateName() {
+      if (nameInput.value.trim() === "") {
+        nameError.innerHTML = "Please enter a Category Name!";
+        return false;
+      } else {
+        nameError.innerHTML = "";
+        return true;
+      }
+    }
+
+    function validateDescription() {
+      const descriptionValue = descriptionInput.value.trim();
+
+      if (descriptionValue === "") {
+        descriptionError.innerHTML = "Please enter a description!";
+        return false;
+      }
+
+      descriptionError.innerHTML = "";
+      return true;
+    }
+
+    function validateOffer() {
+      const offerValue = offerInput.value.trim();
+
+      const offerNumber = parseFloat(offerValue);
+        if(offerValue !== ""){
+      if (isNaN(offerNumber) || offerNumber < 0) {
+        offerError.innerHTML = "Please enter a valid discount percentage greater than or equal to 0!";
+        return false;
+      }
+    }
+
+      if (offerNumber > 100) {
+        offerError.innerHTML = "Discount percentage cannot be more than 100%";
+        return false;
+      }
+
+      offerError.innerHTML = "";
+      return true;
+    }
+
+    addCategoryForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const validations = [validateName(), validateDescription(), validateOffer()];
+      const hasErrors = validations.some(validation => validation === false);
+      if (!hasErrors) {
+        addCategoryForm.submit();
+      }
+    });
+  </script>
 
   <!-- plugins:js -->
   <script src="vendors/js/vendor.bundle.base.js"></script>

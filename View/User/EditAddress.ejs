@@ -33,28 +33,32 @@
             
              
             
-			<form action="/user-editAddress/<%= Address._id %>" method="post" class="bg-white p-5 contact-form">
+			<form action="/user-editAddress/<%= Address._id %>" method="post" id="editAddressForm" class="bg-white p-5 contact-form">
 				<h2>Edit Address</h2>
 				<div class="form-group">
 					<h4>Housename</h4>
-					<input type="text" class="form-control" name="housename" value="<%= Address.housename %>">
+					<input type="text" id="housename" class="form-control"  name="housename" value="<%= Address.housename %>">
+					<div id="housenameError" style="color: red;"></div>
 				</div>
 				<div class="form-group">
 					<h4>Pincode</h4>
-					<input type="text" class="form-control" name="pincode" value="<%= Address.pincode %>">
+					<input type="text" id="pincode" class="form-control" name="pincode" value="<%= Address.pincode %>">
+					<div id="pincodeError" style="color: red;"></div>
 				</div>
 				<div class="form-group">
 					<h4>Post</h4>
-					<input type="text" class="form-control" name="post" value="<%= Address.post %>">
+					<input type="text" id="post"  class="form-control" name="post" value="<%= Address.post %>">
+					<div id="postError" style="color: red;"></div>
 				</div>
 				<div class="form-group">
 					<h4>District</h4>
-					<input type="text" class="form-control" name="district" value="<%= Address.district %>">
+					<input type="text" id="district" class="form-control" name="district" value="<%= Address.district %>">
+					<div id="districtError" style="color: red;"></div>
 				</div>
 				<!-- Add a hidden input field to store the addressId -->
 				<input type="hidden" name="addressId" value="<%= Address._id %>">
 				<div class="form-group">
-					<input type="submit" value="Update" class="btn btn-primary py-3 px-5">
+					<button type="submit" id="" class="btn btn-primary py-3 px-5">Add</button>
 				</div>
 			</form>
 			
@@ -130,6 +134,77 @@
   <!-- loader -->
   <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
 
+  <script>
+
+	const AddressForm = document.getElementById("editAddressForm");
+	
+	const housenameInput = document.getElementById('housename');
+	const housenameError = document.getElementById('housenameError');
+  
+	const postInput = document.getElementById('post');
+	const postError = document.getElementById('postError');
+  
+	const districtInput = document.getElementById('district');
+	const districtError = document.getElementById('districtError');
+  
+	const pincodeInput = document.getElementById('pincode');
+	const pincodeError = document.getElementById('pincodeError');
+  
+
+  
+	function validateName() {
+	  const housenameValue = housenameInput.value.trim();
+	  console.log('Housename Value:', housenameValue);
+	  if (housenameValue === "") {
+		housenameError.innerHTML = "Please enter a Housename!";
+		return false;
+	  }
+	  return true;
+	}
+  
+	function validatePost() {
+	  const postValue = postInput.value.trim();
+	  console.log("validationnnn")
+	  if (postValue === "") {
+		postError.innerHTML = "Please enter a PostOffice!";
+		return false;
+	  }
+	  return true;
+	}
+  
+	function validateDistrict() {
+	  const districtValue = districtInput.value.trim();
+	  if (districtValue === "") {
+		districtError.innerHTML = "Please enter a District!";
+		return false;
+	  }
+	  return true;
+	}
+  
+	function validatePincode() {
+    const pincodeValue = pincodeInput.value.trim();
+    const pincodeRegex = /^\d{6}$/; // Regex for 6 digits
+
+    if (pincodeValue === "") {
+      pincodeError.innerHTML = "Please enter a Pincode!";
+      return false;
+    } else if (!pincodeRegex.test(pincodeValue)) {
+      pincodeError.innerHTML = "Please enter a valid 6-digit Pincode!";
+      return false;
+    }
+
+    return true;
+  }
+  
+  AddressForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const validations = [validateName(), validatePost(), validateDistrict(), validatePincode()];
+    const hasErrors = validations.some(validation => validation === false);
+    if (!hasErrors) {
+      AddressForm.submit();
+    }
+  });
+  </script>
 
   <script src="/User/js/jquery.min.js"></script>
   <script src="/User/js/jquery-migrate-3.0.1.min.js"></script>

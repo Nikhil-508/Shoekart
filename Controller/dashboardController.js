@@ -281,14 +281,7 @@ const loadDash = async(req,res)=>{
 
         const blockUsers = await Users.find({ is_block:true })
         const allUsers = await Users.find()
-        // console.log(allMonths,alltime,DailyI,Monthly,yearly,bestProducts,outofstock,allUsers,paymentoptions,blockUsers)
-        // console.log(allMonths,"monthssss");
-        // console.log(allUsers,"usersss");
-        // console.log(paymentoptions,"pymnttt");
-        // console.log(blockUsers,"blkkk");
-        // console.log(DailyI,"dailyyyy");
-        // console.log(Monthly,"monthlyy");
-        // console.log(bestProducts,"bstttt");
+        
         res.render("admindashboard", {
             daily: DailyI,
             monthly: Monthly,

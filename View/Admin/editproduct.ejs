@@ -20,12 +20,13 @@
                     <p class="card-description">
                       Edit products
                     </p>
-                    <form class="forms-sample" action="/admin/editproduct" method="post" enctype="multipart/form-data" >
+                    <form class="forms-sample" id="editProductForm" action="/admin/editproduct" method="post" enctype="multipart/form-data" >
                       <div class="d-none"><input type="text" name="productId" value= <%= productData._id %> ></div>
                       
                       <div class="form-group">
                         <label for="name">Name</label>
                         <input name="name" value=<%= productData.name %> type="text" class="form-control" id="name" placeholder="Name">
+                        <div id="NameError" style="color: red;"></div>
                       </div>
                       <div class="form-group">
                         <label for="category">Catagory</label>
@@ -36,10 +37,12 @@
                               <option value= <%= element._id %>> <%= element.name %> </option>
                           <% }) %>
                         </select>
+                        <div id="catagoryError" style="color: red;"></div>
                       </div>
                       <div class="form-group">
                         <label for="quantity">quantity</label>
                         <input type="number" value=<%= productData.quantity %> name="quantity" class="form-control" id="quantity" placeholder="quantity">
+                        <div id="stockError" style="color: red;"></div>
                       </div>
                       <!-- =========== OFFER ============= -->
                       <div class="form-group">
@@ -52,11 +55,13 @@
                   
                           <label for="endDate">End Date:</label>
                           <input type="date" name="endDate" id="endDate">
+                          <div id="offerError" style="color: red;"></div>
                       </div>
 
                       <div class="form-group">
                         <label for="price">price</label>
                         <input type="number" value=<%= productData.price %> name="price" class="form-control" id="price" placeholder="price">
+                        <div id="priceError" style="color: red;"></div>
                       </div>
                       <div class="form-group">
                         <label for="exampleSelectGender">Gender</label>
@@ -65,6 +70,7 @@
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                           </select>
+                          <div id="genderError" style="color: red;"></div>
                         </div>
                         <div class="form-group">
                           <label for="showImage">Images</label>
@@ -72,6 +78,7 @@
                           <img src="/Images/product-images/<%= productData.images[i] %>" style="width: 100px; height: auto;" alt="img">
                           <a href="/admin/productImageDelete/<%= productData._id %>/<%= i %>" class="btn btn-danger">Delete</a>
                           <% } %>
+                          
                         </div>
                         <% if (productData.images.length < 4) { %>
                           <div class="form-group">
@@ -81,24 +88,36 @@
                             <% } else { %>
                             <input accept="image/*" type="file" name="img" class="form-control">
                             <% } %>
+                            <div id="imageError" style="color: red;"></div>
                           </div>
                         <% } %>
 
                       <div class="form-group">
                         <label for="colour">Colour</label>
-                        <input type="text"  value=<%= productData.colour %> name="colour" class="form-control" id="colour" placeholder="Location">
+                        <input type="text"  value=<%= productData.colour %> name="colour" class="form-control" id="colour" placeholder="Colour">
+                        <div id="colorError" style="color: red;"></div>
                       </div>
                       <div class="form-group">
                         <label for="Size">Size</label>
-                        <input type="number"  value=<%= productData.size %> name="size" class="form-control" id="Size" placeholder="Location">
+                        <input type="number"  value=<%= productData.size %> name="size" class="form-control" id="Size" placeholder="size">
+                        <div id="sizeError" style="color: red;"></div>
                       </div>
                       <div class="form-group">
                         <label for="exampleTextarea1">Description</label>
 
                         <textarea  name="description" class="form-control" id="exampleTextarea1" rows="4"><%=productData.description %></textarea>
+                        <div id="descriptionError" style="color: red;"></div>
                       </div>
                       <button type="submit" class="btn btn-primary mr-2">Submit</button>
                       <button class="btn btn-light">Cancel</button>
+
+                      <% if (message !=="" ) { %>
+                        <p class="text-danger">
+                          <%= message %>
+                        </p>
+                        <% } %>
+
+
                     </form>
                   </div>
                 </div>
@@ -116,6 +135,217 @@
     <!-- page-body-wrapper ends -->
   </div>
   <!-- container-scroller -->
+
+
+  <script>
+    const couponForm = document.getElementById("editProductForm");
+    const nameInput = document.getElementById("name");
+    const nameError = document.getElementById("NameError");
+
+    const categoryInput = document.getElementById("category");
+    const categoryError = document.getElementById("catagoryError");
+
+    const stockInput = document.getElementById("quantity");
+    const stockError = document.getElementById("stockError");
+
+    const offerInput = document.getElementById("discountPercentage");
+    const offerError = document.getElementById("offerError");
+
+    const priceInput = document.getElementById("price");
+    const priceError = document.getElementById("priceError");
+
+    const genderinput = document.getElementById("exampleSelectGender")
+    const genderError = document.getElementById("genderError")
+
+    // const imagesInput = document.getElementById("images");
+    // const imagesError = document.getElementById("imageError");
+
+    const colorInput = document.getElementById("colour");
+    const colorError = document.getElementById("colorError");
+
+    const sizeInput = document.getElementById("Size")
+    const sizeError = document.getElementById("sizeError")
+
+    const descriptionInput = document.getElementById("exampleTextarea1");
+    const descriptionError = document.getElementById("descriptionError");
+
+
+
+    function validateName() {
+      if (nameInput.value.trim() === "") {
+        nameError.innerHTML = "Please enter a Product Name!";
+        return false;
+      } else {
+        nameError.innerHTML = "";
+        return true;
+      }
+    }
+
+
+    function validateGender() {
+      const selectedGender = genderinput.value.trim();
+
+      if (selectedGender === "") {
+        genderError.innerHTML = "Please select a gender!";
+        return false;
+      }
+
+      genderError.innerHTML = "";
+      return true;
+    }
+
+
+    function validatePrice() {
+      const priceValue = priceInput.value.trim();
+
+      if (priceValue === "") {
+        priceError.innerHTML = "Please enter a price!";
+        return false;
+      }
+      if (!/^\d+(\.\d{1,2})?$/.test(priceValue) || parseFloat(priceValue) < 0) {
+        priceError.innerHTML = "Please enter a valid price greater than or equal to 0!";
+        return false;
+      }
+      priceError.innerHTML = "";
+      return true;
+
+    }
+
+
+    
+    function validateSize() {
+      const sizeValue = sizeInput.value.trim();
+
+      if (sizeValue === "") {
+        sizeError.innerHTML = "Please enter a price!";
+        return false;
+      }
+      if (!/^\d+(\.\d{1,2})?$/.test(sizeValue) || parseFloat(sizeValue) < 0) {
+        sizeError.innerHTML = "Please enter a valid price greater than or equal to 0!";
+        return false;
+      }
+      sizeError.innerHTML = "";
+      return true;
+
+    }
+
+    function validateOffer() {
+      const offerValue = offerInput.value.trim();
+
+      // if (offerValue === "") {
+      //   offerError.innerHTML = "Please enter an offer price!";
+      //   return false;
+      // }
+
+      const offerNumber = parseFloat(offerValue);
+
+      // Check if the offer is a valid number and not less than 0
+      if(offerValue !== ""){
+      if (isNaN(offerNumber) || offerNumber < 0) {
+        offerError.innerHTML = "Please enter a valid offer price greater than or equal to 0!";
+        return false;
+      }
+    }
+
+      // Check if the offer is greater than 100%
+      if (offerNumber > 100) {
+        offerError.innerHTML = "Offer cannot be more than 100%";
+        return false;
+      }
+
+      offerError.innerHTML = "";
+      return true;
+    }
+
+    function validateStock() {
+      const stockValue = stockInput.value.trim();
+
+      if (stockValue === "") {
+        stockError.innerHTML = "Please enter a stock count!";
+        return false;
+      }
+
+      const stockNumber = parseInt(stockValue);
+
+      // Check if the stock is a valid number and greater than 0
+      if (isNaN(stockNumber) || stockNumber <= 0) {
+        stockError.innerHTML = "Please enter a valid stock count greater than 0!";
+        return false;
+      }
+
+      stockError.innerHTML = "";
+      return true;
+    }
+
+    function validateDescription() {
+      const descriptionValue = descriptionInput.value.trim();
+
+      if (descriptionValue === "") {
+        descriptionError.innerHTML = "Please enter a description!";
+        return false;
+      }
+
+      descriptionError.innerHTML = "";
+      return true;
+    }
+
+    function validateCategory() {
+      const selectedCategory = categoryInput.value.trim();
+
+      if (selectedCategory === "") {
+        categoryError.innerHTML = "Please select a category!";
+        return false;
+      }
+
+      categoryError.innerHTML = "";
+      return true;
+    }
+
+    // function validateImages() {
+    //   const selectedFiles = imagesInput.files;
+
+    //   // Check if the field is empty
+    //   if (selectedFiles.length === 0) {
+    //     imagesError.innerHTML = "Please select at least one image!";
+    //     return false;
+    //   }
+
+    //   // Check if more than three images are selected
+    //   if (selectedFiles.length > 4) {
+    //     imagesError.innerHTML = "Please select only up to four images!";
+    //     return false;
+    //   }
+
+    //   imagesError.innerHTML = "";
+    //   return true;
+    // }
+
+
+
+    function validateColor() {
+      const selectedColor = colorInput.value.trim();
+
+      if (selectedColor === "" || selectedColor === "-1") {
+        colorError.innerHTML = "Please select a color!";
+        return false;
+      }
+
+      colorError.innerHTML = "";
+      return true;
+    }
+
+    couponForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const validations = [
+        validateColor(),validateSize(), validateCategory(), validateDescription(), validateStock(), validateOffer(), validatePrice(), validateName()
+      ];
+      const hasErrors = validations.some(validation => validation === false);
+      if (!hasErrors) {
+        couponForm.submit(); // Trigger the form submission
+      }
+    });
+
+  </script>
 
   <!-- jquery cdn -->
   <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>

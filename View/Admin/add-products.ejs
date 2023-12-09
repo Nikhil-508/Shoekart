@@ -1,126 +1,361 @@
 <%- include("../Layout/Adminlayout/admin_header") %>
-<body>
-  <div class="container-scroller">
-    <!-- partial:partials/_navbar.html -->
-          <%- include('../Layout/Adminlayout/admin_navbar') %>
-    <!-- partial -->
-    <div class="container-fluid page-body-wrapper">
-      <!-- partial:partials/_settings-panel.html -->
+
+  <body>
+    <div class="container-scroller">
+      <!-- partial:partials/_navbar.html -->
+      <%- include('../Layout/Adminlayout/admin_navbar') %>
+        <!-- partial -->
+        <div class="container-fluid page-body-wrapper">
+          <!-- partial:partials/_settings-panel.html -->
           <%- include('../Layout/Adminlayout/admin_settingspanel') %>
-      <!-- partial -->
-      <!-- partial:partials/_sidebar.html -->
-          <%- include('../Layout/Adminlayout/admin_sidebar') %>
-      <!-- partial -->
-      <div class="main-panel">
-        <div class="content-wrapper">
-          <div class="row">
-            <div class="col-12 grid-margin stretch-card">
-                <div class="card">
-                  <div class="card-body">
-                    <h4 class="card-title">Add Products</h4>
-                    <p class="card-description">
-                      Add products
-                    </p>
-                    <form class="forms-sample" action="/admin/add-product" method="post" enctype="multipart/form-data"  >
-                      <div class="form-group">
-                        <label for="name">Name</label>
-                        <input name="name" type="text" class="form-control" id="name" placeholder="Name">
-                      </div>
-                      <div class="form-group">
-                        <label for="category">Catagory</label>
-                        <!-- <input type="text" name="catagory" class="form-control" id="catagory" placeholder="Email"> -->
-                          <select name="category" class="form-control" id="category">
-                            <% categories.forEach(element => { %>
-                                <option value= <%= element._id %>> <%= element.name %> </option>
-                            <% }) %>
-                          </select>
-                      </div>
-                      <div class="form-group">
-                        <label for="quantity">Quantity</label>
-                        <input type="number" name="quantity" class="form-control" id="quantity" placeholder="Quantity">
-                      </div>
+            <!-- partial -->
+            <!-- partial:partials/_sidebar.html -->
+            <%- include('../Layout/Adminlayout/admin_sidebar') %>
+              <!-- partial -->
+              <div class="main-panel">
+                <div class="content-wrapper">
+                  <div class="row">
+                    <div class="col-12 grid-margin stretch-card">
+                      <div class="card">
+                        <div class="card-body">
+                          <h4 class="card-title">Add Products</h4>
+                          <p class="card-description">
+                            Add products
+                          </p>
+                          <form class="forms-sample" id="addProductForm" action="/admin/add-product" method="post"
+                            enctype="multipart/form-data">
 
-                       <!-- =========== OFFER ============= -->
-                       <div class="form-group">
-                        <label for="quantity">Offer</label>
-                          <label for="discountPercentage">Discount Percentage:</label>
-                          <input type="number" name="discountPercentage" id="discountPercentage" min="0" max="100">
-                  
-                          <label for="startDate">Start Date:</label>
-                          <input type="date" name="startDate" id="startDate">
-                  
-                          <label for="endDate">End Date:</label>
-                          <input type="date" name="endDate" id="endDate">
-                      </div>
+                            <% if (message !=="" ) { %>
+                              <p class="text-danger">
+                                <%= message %>
+                              </p>
+                              <% } %>
 
-                      <div class="form-group">
-                        <label for="price">Price</label>
-                        <input type="number" name="price" class="form-control" id="price" placeholder="Price">
-                      </div>
-                      <div class="form-group">
-                        <label for="exampleSelectGender">Gender</label>
-                          <select name="gender" class="form-control" id="exampleSelectGender">
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                          </select>
+
+                                <div class="form-group">
+                                  <label for="name">Name</label>
+                                  <input name="name" type="text" class="form-control" id="name" placeholder="Name">
+                                  <div id="NameError" style="color: red;"></div>
+                                </div>
+                                <div class="form-group">
+                                  <label for="category">Catagory</label>
+                                  <select name="category" class="form-control" id="category">
+                                    <% categories.forEach(element=> { %>
+                                      <option value=<%=element._id %>> <%= element.name %>
+                                      </option>
+                                      <% }) %>
+                                  </select>
+                                  <div id="catagoryError" style="color: red;"></div>
+                                </div>
+                                <div class="form-group">
+                                  <label for="quantity">Quantity</label>
+                                  <input type="number" name="quantity" class="form-control" id="quantity"
+                                    placeholder="Quantity">
+                                  <div id="stockError" style="color: red;"></div>
+                                </div>
+
+                                <!-- =========== OFFER ============= -->
+                                <div class="form-group">
+                                  <label for="quantity">Offer</label>
+                                  <label for="discountPercentage">Discount Percentage:</label>
+                                  <input type="number" name="discountPercentage" id="discountPercentage" min="0"
+                                    max="100">
+
+                                  <label for="startDate">Start Date:</label>
+                                  <input type="date" name="startDate" id="startDate">
+
+                                  <label for="endDate">End Date:</label>
+                                  <input type="date" name="endDate" id="endDate">
+                                  <div id="offerError" style="color: red;"></div>
+                                </div>
+
+                                <div class="form-group">
+                                  <label for="price">Price</label>
+                                  <input type="number" name="price" class="form-control" id="price" placeholder="Price">
+                                  <div id="priceError" style="color: red;"></div>
+                                </div>
+                                <div class="form-group">
+                                  <label for="exampleSelectGender">Gender</label>
+                                  <select name="gender" class="form-control" id="exampleSelectGender">
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                  </select>
+                                  <div id="genderError" style="color: red;"></div>
+                                </div>
+                                <div class="form-group">
+                                  <label>File upload</label>
+                                  <input accept="image/*" multiple type="file" id="images" name="img"
+                                    class="form-control">
+                                  <div id="imageError" style="color: red;"></div>
+                                </div>
+                                <div class="form-group">
+                                  <label for="colour">Colour</label>
+                                  <input type="text" name="colour" class="form-control" id="colour"
+                                    placeholder="Colour">
+                                  <div id="colorError" style="color: red;"></div>
+                                </div>
+                                <div class="form-group">
+                                  <label for="Size">Size</label>
+                                  <input type="number" name="size" class="form-control" id="Size" placeholder="size">
+                                  <div id="sizeError" style="color: red;"></div>
+                                </div>
+                                <div class="form-group">
+                                  <label for="exampleTextarea1">Description</label>
+                                  <textarea name="description" class="form-control" id="exampleTextarea1"
+                                    rows="4"></textarea>
+                                  <div id="descriptionError" style="color: red;"></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                                <button class="btn btn-light">Cancel</button>
+                          </form>
                         </div>
-                      <div class="form-group">
-                        <label>File upload</label>
-                        <input accept="image/*" multiple type="file" name="img" class="form-control">
                       </div>
-                      <div class="form-group">
-                        <label for="colour">Colour</label>
-                        <input type="text" name="colour" class="form-control" id="colour" placeholder="Colour">
-                      </div>
-                      <div class="form-group">
-                        <label for="Size">Size</label>
-                        <input type="number" name="size" class="form-control" id="Size" placeholder="size">
-                      </div>
-                      <div class="form-group">
-                        <label for="exampleTextarea1">Description</label>
-                        <textarea  name="description" class="form-control" id="exampleTextarea1" rows="4"></textarea>
-                      </div>
-                      <button type="submit" class="btn btn-primary mr-2">Submit</button>
-                      <button class="btn btn-light">Cancel</button>
-                    </form>
+                    </div>
+
                   </div>
                 </div>
+                <%- include('../Layout/Adminlayout/admin_footer') %>
               </div>
-          
-          </div>
         </div>
-        <!-- content-wrapper ends -->
-        <!-- partial:../../partials/_footer.html -->
-        <%- include('../Layout/Adminlayout/admin_footer') %>
-                <!-- partial -->
-      </div>
-      <!-- main-panel ends -->
-    </div>   
-    <!-- page-body-wrapper ends -->
-  </div>
-  <!-- container-scroller -->
+    </div>
 
-  <!-- plugins:js -->
-  <script src="vendors/js/vendor.bundle.base.js"></script>
-  <!-- endinject -->
-  <!-- Plugin js for this page -->
-  <script src="vendors/chart.js/Chart.min.js"></script>
-  <script src="vendors/datatables.net/jquery.dataTables.js"></script>
-  <script src="vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
-  <script src="js/dataTables.select.min.js"></script>
 
-  <!-- End plugin js for this page -->
-  <!-- inject:js -->
-  <script src="js/off-canvas.js"></script>
-  <script src="js/hoverable-collapse.js"></script>
-  <script src="js/template.js"></script>
-  <script src="js/settings.js"></script>
-  <script src="js/todolist.js"></script>
-  <!-- endinject -->
-  <!-- Custom js for this page-->
-  <script src="js/dashboard.js"></script>
-  <script src="js/Chart.roundedBarCharts.js"></script>
-  <!-- End custom js for this page-->
-</body>
+    <!-- form validation -->
 
-</html>
+    <script>
+      const couponForm = document.getElementById("addProductForm");
+      const nameInput = document.getElementById("name");
+      const nameError = document.getElementById("NameError");
+
+      const categoryInput = document.getElementById("category");
+      const categoryError = document.getElementById("catagoryError");
+
+      const stockInput = document.getElementById("quantity");
+      const stockError = document.getElementById("stockError");
+
+      const offerInput = document.getElementById("discountPercentage");
+      const offerError = document.getElementById("offerError");
+
+      const priceInput = document.getElementById("price");
+      const priceError = document.getElementById("priceError");
+
+      const genderinput = document.getElementById("exampleSelectGender")
+      const genderError = document.getElementById("genderError")
+
+      const imagesInput = document.getElementById("images");
+      const imagesError = document.getElementById("imageError");
+
+      const colorInput = document.getElementById("colour");
+      const colorError = document.getElementById("colorError");
+
+      const sizeInput = document.getElementById("Size")
+      const sizeError = document.getElementById("sizeError")
+
+      const descriptionInput = document.getElementById("exampleTextarea1");
+      const descriptionError = document.getElementById("descriptionError");
+
+
+
+      function validateName() {
+        if (nameInput.value.trim() === "") {
+          nameError.innerHTML = "Please enter a Product Name!";
+          return false;
+        } else {
+          nameError.innerHTML = "";
+          return true;
+        }
+      }
+
+
+      function validateGender() {
+        const selectedGender = genderinput.value.trim();
+
+        if (selectedGender === "") {
+          genderError.innerHTML = "Please select a gender!";
+          return false;
+        }
+
+        genderError.innerHTML = "";
+        return true;
+      }
+
+      
+
+
+      function validatePrice() {
+        const priceValue = priceInput.value.trim();
+
+        if (priceValue === "") {
+          priceError.innerHTML = "Please enter a price!";
+          return false;
+        }
+        if (!/^\d+(\.\d{1,2})?$/.test(priceValue) || parseFloat(priceValue) < 0) {
+          priceError.innerHTML = "Please enter a valid price greater than or equal to 0!";
+          return false;
+        }
+        priceError.innerHTML = "";
+        return true;
+
+      }
+
+      
+
+      function validateSize() {
+        const sizeValue = sizeInput.value.trim();
+
+        if (sizeValue === "") {
+          sizeError.innerHTML = "Please enter a price!";
+          return false;
+        }
+        if (!/^\d+(\.\d{1,2})?$/.test(sizeValue) || parseFloat(sizeValue) < 0) {
+          sizeError.innerHTML = "Please enter a valid price greater than or equal to 0!";
+          return false;
+        }
+        sizeError.innerHTML = "";
+        return true;
+
+      }
+
+      function validateOffer() {
+        const offerValue = offerInput.value.trim();
+
+        // if (offerValue === "") {
+        //   offerError.innerHTML = "Please enter an offer price!";
+        //   return false;
+        // }
+
+        const offerNumber = parseFloat(offerValue);
+
+        // Check if the offer is a valid number and not less than 0
+        if(offerValue !== ""){
+        if (isNaN(offerNumber) || offerNumber < 0) {
+          offerError.innerHTML = "Please enter a valid offer price greater than or equal to 0!";
+          return false;
+        }
+      }
+
+        // Check if the offer is greater than 100%
+        if (offerNumber > 100) {
+          offerError.innerHTML = "Offer cannot be more than 100%";
+          return false;
+        }
+
+        offerError.innerHTML = "";
+        return true;
+      }
+
+      function validateStock() {
+        const stockValue = stockInput.value.trim();
+
+        if (stockValue === "") {
+          stockError.innerHTML = "Please enter a stock count!";
+          return false;
+        }
+
+        const stockNumber = parseInt(stockValue);
+
+        // Check if the stock is a valid number and greater than 0
+        if (isNaN(stockNumber) || stockNumber <= 0) {
+          stockError.innerHTML = "Please enter a valid stock count greater than 0!";
+          return false;
+        }
+
+        stockError.innerHTML = "";
+        return true;
+      }
+
+      function validateDescription() {
+        const descriptionValue = descriptionInput.value.trim();
+
+        if (descriptionValue === "") {
+          descriptionError.innerHTML = "Please enter a description!";
+          return false;
+        }
+
+        descriptionError.innerHTML = "";
+        return true;
+      }
+
+      function validateCategory() {
+        const selectedCategory = categoryInput.value.trim();
+
+        if (selectedCategory === "") {
+          categoryError.innerHTML = "Please select a category!";
+          return false;
+        }
+
+        categoryError.innerHTML = "";
+        return true;
+      }
+
+      function validateImages() {
+        const selectedFiles = imagesInput.files;
+
+        // Check if the field is empty
+        if (selectedFiles.length === 0) {
+          imagesError.innerHTML = "Please select at least one image!";
+          return false;
+        }
+
+        // Check if more than two images are selected
+        if (selectedFiles.length > 3) {
+          imagesError.innerHTML = "Please select only up to three images!";
+          return false;
+        }
+
+        imagesError.innerHTML = "";
+        return true;
+      }
+
+
+
+      function validateColor() {
+        const selectedColor = colorInput.value.trim();
+
+        if (selectedColor === "") {
+          colorError.innerHTML = "Please select a color!";
+          return false;
+        }
+
+        colorError.innerHTML = "";
+        return true;
+      }
+
+      couponForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const validations = [
+          validateColor(),validateSize(), validateImages(), validateCategory(), validateDescription(), validateStock(), validateOffer(), validatePrice(), validateName()
+        ];
+        const hasErrors = validations.some(validation => validation === false);
+        if (!hasErrors) {
+          couponForm.submit(); // Trigger the form submission
+        }
+      });
+
+    </script>
+
+
+    <!-- plugins:js -->
+    <script src="vendors/js/vendor.bundle.base.js"></script>
+    <!-- endinject -->
+    <!-- Plugin js for this page -->
+    <script src="vendors/chart.js/Chart.min.js"></script>
+    <script src="vendors/datatables.net/jquery.dataTables.js"></script>
+    <script src="vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
+    <script src="js/dataTables.select.min.js"></script>
+
+    <!-- End plugin js for this page -->
+    <!-- inject:js -->
+    <script src="js/off-canvas.js"></script>
+    <script src="js/hoverable-collapse.js"></script>
+    <script src="js/template.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/todolist.js"></script>
+    <!-- endinject -->
+    <!-- Custom js for this page-->
+    <script src="js/dashboard.js"></script>
+    <script src="js/Chart.roundedBarCharts.js"></script>
+    <!-- End custom js for this page-->
+  </body>
+
+  </html>

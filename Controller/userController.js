@@ -52,10 +52,6 @@ function validateUserInput(req, res, name, email, phone, password) {
         return res.render('signup', { message: "Invalid password" })
     }
 
-    // if (!passwordRegex.test(confirmpassword)) {
-    //     return res.render('signup', { message: "Invalid confirm password" })
-    // }
-
     return null; // No validation errors
 }
 
@@ -71,7 +67,6 @@ const getHome = async (req, res, next) => {
     } catch (error) {
         next(error)
         console.log(error.message);
-
     }
 }
 
@@ -228,9 +223,7 @@ const resetPassword = async (req, res, next) => {
                 console.log('Password reset success email sent.');
             }
         });
-        // console.log(resetToken,"before");
         res.render('resetPassword', { message: 'Password reset successful', resetToken: resetToken });
-        // console.log(resetToken,"after");
 
 
     } catch (error) {
@@ -472,13 +465,6 @@ const getAllShoes = async (req, res, next) => {
 
         // Fetch the category names for rendering in the UI
         const category = await categories.find();
-
-        console.log("check");
-        // if(!categoryId && !gender){
-        //     res.render('allShoes',{products, currentPage: page,totalPages,category})
-        // }
-        // Render the "allShoes" template with the retrieved products, current page, total pages, filters, and categories
-        // const filteredProducts = products.filter(product => !product.is_delete);
         console.log(filteredProducts);
         res.render("allShoes", { filteredProducts, products, currentPage: page, populatedProducts, catData, totalPages, categoryId, gender, category });
 
@@ -502,7 +488,6 @@ const getproductsByCategory = async (req, res, next) => {
 
 
         const catData = await categories.find()
-        console.log(req.query, "quuryyyyyyy");
         let products
 
         if (gender) {
@@ -516,10 +501,6 @@ const getproductsByCategory = async (req, res, next) => {
                 .limit(pageSize)
                 .populate('category')
         }
-
-        // const filteredProducts = products.filter(product=>{!product.is_delete})
-
-        console.log(products, "prdct prdcteeeeyy");
 
         const totalProducts = await Products.countDocuments({ category: catId, gender: gender })
         const totalPages = Math.ceil(totalProducts / pageSize)
@@ -611,17 +592,10 @@ const updateQuantity = async (req, res, next) => {
             { new: true }
         );
 
-        // Calculate the new product amount
-        // const product = user.cart.find((item) => item.product.toString() === productId);
-        // const newProductAmount = product.quantity * product.productAmount;
-        // const offerPercentage = product.offerpercentage
-        // const productPrice = product.productAmount
-
         // // Update the totalCartAmount in the user's schema
         user.totalCartAmount = user.cart.reduce((total, item) => total + item.productAmount, 0);
         await user.save();
 
-        // res.json({ offerPercentage, productPrice });
         res.json({ message: "hai heloss", newProductAmount, totalProductDiscount,totalCartAmount: user.totalCartAmount, productId })
     } catch (error) {
         next(error)
@@ -652,7 +626,6 @@ const addToCart = async (req, res, next) => {
                 },
             }
         );
-        console.log(response,"rspnssss")
         res.redirect('/mycart')
     } catch (error) {
         next(error)
@@ -688,14 +661,6 @@ const getUserProfile = async (req, res, next) => {
         const user = await Users.findById(userId)
         const catData = await categories.find()
         const addresses = await address.find({ UserId: req.session.userId })
-
-        //for wallet amount
-        // const orders = await Order.find({ userId: userId, status: { $in: ["Return", "Cancelled"] } })
-        // const orderAmount = orders.reduce((sum, order) => {
-        //     return sum + order.total
-        // }, 0)
-
-        // await Users.findByIdAndUpdate(userId, { $set: { wallet: orderAmount } });
 
         //wallet transaction
         const walletHistory = await getUserWalletHistory(userId)
@@ -841,7 +806,6 @@ const DeleteAddress = async (req, res, next) => {
     try {
         const addressId = req.params.addressId
         const deleteAddress = await address.deleteOne({ _id: addressId })
-        // console.log(deleteAddress)
         res.redirect('/user-profile');
 
     } catch (error) {
@@ -853,9 +817,7 @@ const DeleteAddress = async (req, res, next) => {
 const getChangePassword = async (req, res, next) => {
     try {
         const UserId = req.session.userId
-        console.log(UserId);
         const user = await Users.findById(UserId)
-        console.log(user);
         res.render('changePassword', { user })
     } catch (error) {
         next(error)
@@ -866,9 +828,7 @@ const getChangePassword = async (req, res, next) => {
 const changePassword = async (req, res, next) => {
     try {
         const userId = req.session.userId
-        // console.log(userId);
         const user = await Users.findById(userId)
-        // console.log(req.body);
         if (!user) {
             return res.status(404).send("User not Found")
         }
@@ -900,25 +860,11 @@ const changePassword = async (req, res, next) => {
 
 const getCheckout = async (req, res, next) => {
     try {
-        // const response = await Users.findOne({ _id: userId })
-        //     .populate({
-        //         path: 'cart.product',
-        //         model: 'products',
-        //         populate: {
-        //             path: 'category',
-        //             model: 'categories'
-        //         }
-        //     })
-        //     .select(['cart', 'totalCartAmount', 'name']);
+       
         const userId = req.session.userId;
         const catData = await categories.find()
         const product = await Products.find()
         const coupon = await Coupons.find()
-        console.log(coupon,"cppnnnn")
-        // const lastPrice = req.body.lastPrice
-        // const finalPrice = req.body.finalPrice
-
-        // console.log(finalPrice, "finalllllll")
 
         const user = await Users.findOne({ _id: userId }).populate({
             path: 'cart.product',
@@ -928,8 +874,6 @@ const getCheckout = async (req, res, next) => {
                 model: 'categories'
             }
         }).select(["cart", "totalCartAmount", "name", "wallet"]);
-        // console.log(user.cart[0].product);
-        // console.log(user,"userrrrrrrrrrrrr")
         if (!user) {
             throw new Error("User not found");
         }
@@ -968,7 +912,6 @@ const userupdateOrderStatus = async (req, res, next) => {
         const userid = req.session.userId
         const user = await Users.findById(userid)
 
-        // console.log(orderId, status);
 
         // Validate the status to make sure it's a valid value
         const validStatusValues = ['Shipped', 'Delivered', 'Processing', 'Cancelled', 'Return'];
@@ -996,7 +939,6 @@ const userupdateOrderStatus = async (req, res, next) => {
 
         if (updatedOrder) {
             res.redirect('/orders')
-            // res.json({ success: true, updatedOrder });
         } else {
             res.render('orders', { message: 'Order not found or status not updated' })
         }
@@ -1019,10 +961,6 @@ const successPage = async (req, res) => {
 const placeOrder = async (req, res, next) => {
     try {
         const { addressradio, productId, productPrice, productTotalAmount, productQuantity, orderAmount, paymentradio,finalAmount } = req.body;
-        // console.log(finalAmount,"finallyyyy")
-        // console.log(productTotalAmount,"totaleeee")
-        // console.log(orderAmount,"orderAmount")
-
         const catData = await categories.find()
 
         if (!paymentradio) {
@@ -1046,13 +984,11 @@ const placeOrder = async (req, res, next) => {
         
             if (User.wallet >= orderAmount[0]) {
                 User.wallet -= orderAmount[0]
-                // console.log("wallet discounteddddd")
                 const transaction = {
                     type: "Debit",
                     amount: orderAmount[0],
                     date: new Date()
                 }
-                // console.log("User.wallet after deduction:", User.wallet);
                 User.walletTransactions.push(transaction)
                 
         
@@ -1122,16 +1058,7 @@ const placeOrder = async (req, res, next) => {
                 if (err) {
                     console.log(err, 'order error from rezor pay');
                 } else {
-                    // console.log(
-                    //     addressradio,
-                    //     productId,
-                    //     productPrice,
-                    //     productTotalAmount,
-                    //     productQuantity,
-                    //     orderAmount[0],
-                    //     paymentradio,
-                    //     "order insider razor payyyyyyyyyyyyyyy"
-                    // )
+                    
 
                     const order = new Order({
                         userId: req.session.userId,
@@ -1171,14 +1098,12 @@ const placeOrder = async (req, res, next) => {
 
 const redeemCoupon = async (req, res, next) => {
     try {
-        console.log("stratsssssssss couponn")
         
             const userid = req.session.userId
             const catData = await categories.find()
             const couponCode = req.body.couponCode
             const userData = await Users.findOne({ _id: userid })
             const coupon = await Coupons.findOne({ couponCode: couponCode })
-            console.log(coupon,"cpncdeeeeeeee")
 
             //>>>>>>>>>>>>> coupon checking <<<<<<<<<<
 
@@ -1242,7 +1167,6 @@ const getSuccesful = async (req, res, next) => {
 
 const verifyPayment = async (req, res, next) => {
     try {
-        console.log(req.body, "dbbbbbbbbbbdddddddddddyyyyyyyyyyyyyy");
         const { response, order, orderId } = req.body
         const sessionOrderId = req.session.orderId
         let hash = crypto.createHmac("sha256", "JdG2FakQQqlUlXItBLeDrxP2")
@@ -1250,7 +1174,6 @@ const verifyPayment = async (req, res, next) => {
         hash = hash.digest("hex")
 
         if (hash == response.razorpay_signature) {
-            console.log("successssssss");
 
             await Order.findOne({ orderId: sessionOrderId })
                 .then((response) => {
@@ -1264,7 +1187,6 @@ const verifyPayment = async (req, res, next) => {
                 res.json({ success: false })
             }
         } else {
-            console.log("faileddddd");
             const success = await Order.updateOne({ orderId: sessionOrderId }, { $set: { status: "Payment Failed" } })
             if (success) {
                 res.json({ success: false })

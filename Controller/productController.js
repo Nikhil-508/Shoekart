@@ -1,23 +1,21 @@
 const products = require('../Model/productSchema')
 const Categories = require('../Model/catagorySchema')
 
-const getAddProducts = async(req,res, next)=>{
+const getAddProducts = async (req, res, next) => {
     try {
-            const categories = await Categories.find({})
-            res.render('add-products' , {categories})
+        const categories = await Categories.find({})
+        res.render('add-products', { message:"", categories })
     } catch (error) {
         next(error)
         console.log(error);
     }
 }
 
-const addProduct = async(req,res, next)=>{
+
+const  addProduct = async(req,res, next)=>{
     try {
-            // console.log(req.files);
             const {name,category,quantity,price,gender,description,colour,size} = req.body
-            // console.log(req.body.images);
             const imageArray = req.body.images 
-            console.log("arrayy",imageArray)
           
             const product = new products({
                 name:name,
@@ -30,7 +28,9 @@ const addProduct = async(req,res, next)=>{
                 size:size,
                 images:imageArray
             })
+
             const productData = await product.save()
+            console.log("saveddddddddd")
             if(productData) {
                 res.redirect('/admin/products')
             }           
@@ -46,10 +46,8 @@ const getProductEdit = async (req, res,next) => {
             const productId = req.params.productId;
             const productData = await products.findById(productId).populate("category")
             const categories = await Categories.find({});
-            // console.log("prdctdata",productData);
-            // console.log("ctgrsss",categories);
             
-            res.render('editproduct', { productData,categories });
+            res.render('editproduct', {message:"", productData,categories });
         
     } catch (error) {
         next(error)
@@ -62,7 +60,6 @@ const getProductEdit = async (req, res,next) => {
 const editProduct = async(req,res, next)=>{
     try {
       
-            console.log(req.body)
             const productId= req.body.productId
             const productname= req.body.name
             const productcategory = req.body.category
@@ -75,8 +72,6 @@ const editProduct = async(req,res, next)=>{
             const productsize = req.body.size
             const Products = await products.findById(productId)
             const imageArray = req.body.images
-            // console.log("imagearray",imageArray)
-            console.log(offer,"offrrrrr");
 
             //image delete
             const index = req.body.index
@@ -120,12 +115,7 @@ const deleteImage = async(req,res, next) => {
       console.log(value);
         console.log("successs");
         await product.save()
-    
-        // Update the product document with the modified images array
-        // const isUpdate = await products.updateOne(
-        //   { _id: productId },
-        //   { $set: { images: updatedImages } }
-        // );
+        
         res.redirect(`/admin/getProductEdit/${productId}`);
 
     } catch (error) {

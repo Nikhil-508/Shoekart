@@ -23,7 +23,6 @@ const getLogin = async (req, res) => {
         } else {
             res.redirect("/admin")
         }
-
     } catch (error) {
         console.log(error);
     }
@@ -105,7 +104,6 @@ const getDashboard = async (req, res) => {
         //finding blocked users
         const blockUsers = await Users.find({is_block: true})
         const allUsers = await Users.find()
-        // console.log(allMonths,alltime,DailyI,MonthlyI,yearlyI,bestProducts,outofstock,allUsers,paymentoptions,blockUsers)
 
         res.render('admindashboard',{
             daily: DailyI,
@@ -128,11 +126,8 @@ const getDashboard = async (req, res) => {
 
 const getUsers = async (req, res) => {
     try {
-      
             const users = await Users.find({})
-            // console.log(users);
             res.render('users', { users })
-        
 
     } catch (error) {
         console.log(error);
@@ -144,20 +139,12 @@ const getUsers = async (req, res) => {
 const getProducts = async (req, res) => {
     try {
         const products = await Products.find({}).populate('category').exec()
-        // console.log(products);
-        // for(let i = 0; i < products.length; i ++) {
-        //     const data = await Products.findById(products[i]._id).populate('category')
-        //     productData.push(data)
-        // }
-        // console.log(productData);
         res.render('products', { products })
     }
     catch (error) {
         console.log(error)
-        res.status(404).sendFile(path.join(__dirname,'public','404error.html'))
     }
 }
-
 
 
 const getCategories = async (req, res) => {
@@ -365,14 +352,10 @@ const calculateReport = async (req, res) => {
         .populate('userId')
         .populate('product.productId')
 
-            // console.log(deliveredOrders[0].product[0],"dlvrdddd");
-            // console.log(deliveredOrders,"newwwwww");
-
         const returnedOrders = await Orders.find({
             date: { $gte: startDate, $lte: endDate },
             status: "Return"
         });
-        // console.log(returnedOrders);
 
         const canceledOrders = await Orders.find({
             date: { $gte: startDate, $lte: endDate },
