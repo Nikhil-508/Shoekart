@@ -251,7 +251,7 @@ const doSignUp = async (req, res, next) => {
         const newPassword = req.body.confirmpassword
 
         const validationError = validateUserInput(req, res, name, email, phone, password);
-
+        console.log(validationError,"errorrr");
         if (validationError) {
             return res.status(400).send(validationError);
         }

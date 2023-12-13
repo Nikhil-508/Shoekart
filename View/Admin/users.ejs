@@ -21,33 +21,32 @@
                           <h4 class="card-title">Users</h4>
                           <div class="table-responsive pt-3">
                             <% if (users.length) { %>
-                            <table class="table table-bordered">
-                              <thead>
-                                <tr>
-                                  <th>
-                                    User ID
-                                  </th>
-                                  <th>
-                                    Name
-                                  </th>
-                                  <th>
-                                    Email
-                                  </th>
-                                  <th>
-                                    Phone
-                                  </th>
-                                  <th>
-                                    Status
-                                  </th>
-                                  <th>
-                                    Action
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <% let serialNumber=1;%>
-                                  <% users.forEach(element=>{ %>
-
+                              <table class="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th>
+                                      Sl.No
+                                    </th>
+                                    <th>
+                                      Name
+                                    </th>
+                                    <th>
+                                      Email
+                                    </th>
+                                    <th>
+                                      Phone
+                                    </th>
+                                    <th>
+                                      Status
+                                    </th>
+                                    <th>
+                                      Action
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <% let serialNumber = (currentPage - 1) * perPage + 1; %>
+                                  <% users.forEach(element => { %>
                                     <tr>
                                       <td>
                                         <%= serialNumber %>
@@ -62,29 +61,52 @@
                                         <%= element.phone %>
                                       </td>
                                       <!--if Users Block then display this -->
-                        <% if (element.is_block === true) { %>
-                          <td>
-                            <p class="text-danger">Blocked</p>
-                          </td>
-                          <td>
-                            <a href="/admin/Users/Unblock-theUser?id=<%= element._id %>" class="btn btn-success">Unblock</a>
-                          </td>
-                          <% } else if (element.is_block === false) { %>
-                            <td>
-                              <p class="text-success">Unblocked</p>
-                            </td>
-                            <td>
-                              <a href="/admin/Users/block-theUser?id=<%= element._id %>" class="btn btn-danger">Block</i></a>
-                            </td>
-                          </tr>
-
-
+                                      <% if (element.is_block === true) { %>
+                                        <td>
+                                          <p class="text-danger">Blocked</p>
+                                        </td>
+                                        <td>
+                                          <a href="/admin/Users/Unblock-theUser?id=<%= element._id %>" class="btn btn-success">Unblock</a>
+                                        </td>
+                                      <% } else if (element.is_block === false) { %>
+                                        <td>
+                                          <p class="text-success">Unblocked</p>
+                                        </td>
+                                        <td>
+                                          <a href="/admin/Users/block-theUser?id=<%= element._id %>" class="btn btn-danger">Block</i></a>
+                                        </td>
+                                      <% } %>
+                                    </tr>
                                     <% serialNumber++; %>
-                                    <% } %>
-                                    <% }) %>
-                              </tbody>
-                            </table>
+                                  <% }); %>
+                                </tbody>
+                              </table>
+                              
+                             <!-- Pagination -->
+                             <div class="pagination justify-content-center mt-4">
+                              <% if (currentPage> 1) { %>
+                                <a class="btn btn-outline-primary" href="?page=<%= currentPage - 1 %>">Previous</a>
+                                <% } %>
+
+                                  <% for (let i=1; i <=totalPages; i++) { %>
+                                    <% if (i===currentPage) { %>
+                                      <span class="btn btn-primary disabled">
+                                        <%= i %>
+                                      </span>
+                                      <% } else { %>
+                                        <a class="btn btn-outline-primary" href="?page=<%= i %>">
+                                          <%= i %>
+                                        </a>
+                                        <% } %>
+                                          <% } %>
+
+                                            <% if (currentPage < totalPages) { %>
+                                              <a class="btn btn-outline-primary"
+                                                href="?page=<%= currentPage + 1 %>">Next</a>
+                                              <% } %>
+                            </div>
                             <% } %>
+                            
 
                           </div>
                         </div>

@@ -6,7 +6,11 @@ const session = require("express-session")
 const nocache = require("nocache")
 const env = require('dotenv').config()
 
-mongoose.connect('mongodb://127.0.0.1:27017/Shoekart',{
+// mongoose.connect('mongodb://127.0.0.1:27017/Shoekart',{
+//     useNewUrlParser : true,
+//     useUnifiedTopology : true
+// })
+mongoose.connect('mongodb+srv://NikhilBalachandran:Nikhildb%402424414@cluster0.lcfbsdh.mongodb.net/Shoekart',{
     useNewUrlParser : true,
     useUnifiedTopology : true
 })
@@ -31,7 +35,7 @@ const adminRouter = require("./Routs/adminRoutes")
 // const { default: mongoose } = require("mongoose")
 
 //middleware
-app.use(express.static('public'));
+app.use(express.static('Public'));
 
 app.use(express.json())
 app.use(express.urlencoded({extended : true}))

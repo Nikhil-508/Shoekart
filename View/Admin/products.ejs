@@ -19,7 +19,7 @@
 
                                         <div class="col-lg-12 grid-margin stretch-card">
 
-                                          
+
                                             <div class="card">
                                                 <div class="card-body">
                                                     <h4 class="card-title">Products</h4>
@@ -36,11 +36,11 @@
                                                                     <th>
                                                                         Name
                                                                     </th>
-                                                                   
+
                                                                     <th>
                                                                         Catagory
                                                                     </th>
-                                                                     <th>
+                                                                    <th>
                                                                         Image
                                                                     </th>
                                                                     <th>
@@ -61,8 +61,8 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                <% let serialNumber=1; %>
-                                                                    <% products.forEach(element => { %>
+                                                                <% let serialNumber = (currentPage - 1) * perPage + 1; %>
+                                                                    <% products.forEach(element=> { %>
                                                                         <tr>
 
                                                                             <td>
@@ -74,14 +74,18 @@
                                                                             <td>
                                                                                 <%= element.category.name %>
                                                                             </td>
-                                                            
-                                                                            
+
+
                                                                             <td>
-                                                                                <a href="#"><img src="/Images/product-images/<%= element.images[0] %>" height="100em" width="100em" alt="<%- element.images[0]%>"></a></td>
-                                                                            
+                                                                                <a href="#"><img
+                                                                                        src="/Images/product-images/<%= element.images[0] %>"
+                                                                                        height="100em" width="100em"
+                                                                                        alt="<%- element.images[0]%>"></a>
+                                                                            </td>
+
                                                                             <td>
                                                                                 <%= element.quantity %>
-                                                                                
+
                                                                             </td>
                                                                             <td>
                                                                                 <%= element.offerpercentage %> %
@@ -89,31 +93,64 @@
                                                                             <td>
                                                                                 <%= element.price %>
                                                                             </td>
-                                                                            <% if (element.is_delete === true){ %>
+                                                                            <% if (element.is_delete===true){ %>
                                                                                 <td>
-                                                                                    <label class="text-danger">Deactive</label>
-                                                                                  </td>
-                                                                                   <td>
-                                                                                    <a href="/admin/getProductEdit/<%= element._id %>" class="btn btn-primary">Edit</a>
-                                                                                    <a href="/admin/products/Active/<%= element._id %>" class="btn btn-success">Active</a>
-                                                                                   </td>
-                                                                                  <%} else {%>
+                                                                                    <label
+                                                                                        class="text-danger">Deactive</label>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <a href="/admin/getProductEdit/<%= element._id %>"
+                                                                                        class="btn btn-primary">Edit</a>
+                                                                                    <a href="/admin/products/Active/<%= element._id %>"
+                                                                                        class="btn btn-success">Active</a>
+                                                                                </td>
+                                                                                <%} else {%>
                                                                                     <td>
-                               
-                                                                                        <label class="text-success">Active</label>
+
+                                                                                        <label
+                                                                                            class="text-success">Active</label>
                                                                                     </td>
-                                                                                     <td>
-                                                                                      <a href="/admin/getProductEdit/<%= element._id %>" class="btn btn-primary">Edit</a>
-                                                                                      <a href="/admin/products/Deactive/<%= element._id %>" class="btn btn-danger">Deactive</a>
-                                                                                     </td>
-                                                                                 <% }%>
-                                                                                  
-                                                                              </tr>
+                                                                                    <td>
+                                                                                        <a href="/admin/getProductEdit/<%= element._id %>"
+                                                                                            class="btn btn-primary">Edit</a>
+                                                                                        <a href="/admin/products/Deactive/<%= element._id %>"
+                                                                                            class="btn btn-danger">Deactive</a>
+                                                                                    </td>
+                                                                                    <% }%>
+
+                                                                        </tr>
                                                                         <% serialNumber++; %>
                                                                             <% }) %>
 
                                                             </tbody>
                                                         </table>
+
+                                                        <!-- Pagination -->
+                                                        <div class="pagination justify-content-center mt-4">
+                                                            <% if (currentPage> 1) { %>
+                                                                <a class="btn btn-outline-primary"
+                                                                    href="?page=<%= currentPage - 1 %>">Previous</a>
+                                                                <% } %>
+
+                                                                    <% for (let i=1; i <=totalPages; i++) { %>
+                                                                        <% if (i===currentPage) { %>
+                                                                            <span class="btn btn-primary disabled">
+                                                                                <%= i %>
+                                                                            </span>
+                                                                            <% } else { %>
+                                                                                <a class="btn btn-outline-primary"
+                                                                                    href="?page=<%= i %>">
+                                                                                    <%= i %>
+                                                                                </a>
+                                                                                <% } %>
+                                                                                    <% } %>
+
+                                                                                        <% if (currentPage < totalPages)
+                                                                                            { %>
+                                                                                            <a class="btn btn-outline-primary"
+                                                                                                href="?page=<%= currentPage + 1 %>">Next</a>
+                                                                                            <% } %>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

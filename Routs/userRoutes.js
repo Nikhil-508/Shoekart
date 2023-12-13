@@ -31,7 +31,7 @@ userRouter.post("/resetPassword",userController.resetPassword)
 
 //>>>>>>>>>>>>>>>>>> get allshoes <<<<<<<<<<<<<<<<<<<<
 
-userRouter.get('/products',auth.realuserauth,userController.getAllShoes)
+// userRouter.get('/products',auth.realuserauth,userController.getAllShoes)
 userRouter.get('/productsByCategory',userController.getproductsByCategory)
 
 

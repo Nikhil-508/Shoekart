@@ -126,8 +126,12 @@ const getDashboard = async (req, res) => {
 
 const getUsers = async (req, res) => {
     try {
-            const users = await Users.find({})
-            res.render('users', { users })
+            const page = parseInt(req.query.page) || 1
+            const perPage = 5
+            const totalUsers = await Users.countDocuments()
+            const totalPages = Math.ceil(totalUsers/perPage)
+            const users = await Users.find({}).sort({_id:-1}).skip((page-1)*perPage).limit(perPage)
+            res.render('users', { users,currentPage:page,totalPages,perPage})
 
     } catch (error) {
         console.log(error);
@@ -138,8 +142,15 @@ const getUsers = async (req, res) => {
 
 const getProducts = async (req, res) => {
     try {
-        const products = await Products.find({}).populate('category').exec()
-        res.render('products', { products })
+        const page = parseInt(req.query.page) || 1 // default 1
+        const perPage = 5 //number of products per page
+        const totalProducts = await Products.countDocuments()
+        const totalPages = Math.ceil(totalProducts/perPage)
+
+        const products = await Products.find({}).sort({_id:-1}).populate('category').skip((page - 1)* perPage)
+        .limit(perPage)
+        res.render('products', { products,currentPage:page,totalPages,perPage })
+
     }
     catch (error) {
         console.log(error)
@@ -162,12 +173,19 @@ const getCategories = async (req, res) => {
 
 const getOrders = async (req, res, next) => {
     try {
-        const orders = await Orders.find().populate([
+        const page = parseInt(req.query.page) || 1 //set to default 1
+        const perPage = 5; //number of order per page
+        const totalOrders = await Orders.countDocuments()
+        const totalPages = Math.ceil(totalOrders/perPage)
+
+        const orders = await Orders.find().sort({date:-1}).populate([
             { path: 'userId' },
             { path: 'product.productId' },
-        ]);
+        ])
+        .skip((page - 1)* perPage)
+        .limit(perPage)
         
-        res.render('orders', { orders });
+        res.render('orders', { orders, currentPage:page,totalPages,perPage });
     } catch (error) {
         next(error)
         console.log(error);
