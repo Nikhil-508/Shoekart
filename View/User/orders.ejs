@@ -65,8 +65,7 @@
 										  <!-- Display product information here -->
 										  <p>Product Name: <%= product.productId.name %></p>
 										  <p>Quantity: <%= product.quantity %></p>
-										  <p>Price: <%= product.price %></p>
-										  <!-- Add more product details as needed -->
+										  <p>Price: <%= product.price%></p>
 										<% } %>
 									  </td>
 									  <td><%= order.delilveryAddress %></td>
@@ -92,6 +91,29 @@
 								  <% } %>
 						    </tbody>
 						  </table>
+						     <!-- Pagination -->
+							 <div class="pagination justify-content-center mt-4">
+								<% if (currentPage> 1) { %>
+								  <a class="btn btn-outline-primary" href="?page=<%= currentPage - 1 %>">Previous</a>
+								  <% } %>
+  
+									<% for (let i=1; i <=totalPages; i++) { %>
+									  <% if (i===currentPage) { %>
+										<span class="btn btn-primary disabled">
+										  <%= i %>
+										</span>
+										<% } else { %>
+										  <a class="btn btn-outline-primary" href="?page=<%= i %>">
+											<%= i %>
+										  </a>
+										  <% } %>
+											<% } %>
+  
+											  <% if (currentPage < totalPages) { %>
+												<a class="btn btn-outline-primary"
+												  href="?page=<%= currentPage + 1 %>">Next</a>
+												<% } %>
+							  </div>
 					  </div>
     			</div>
     		</div>

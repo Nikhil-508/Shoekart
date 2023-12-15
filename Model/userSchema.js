@@ -49,6 +49,18 @@ const userSchema = new mongoose.Schema(
             type:Number,
             default:0
         },
+        referralCode: {
+            type: String,
+        },
+        referred: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
+        referredBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Users',
+        },
         walletTransactions: [walletTransactionSchema],
 
         cart: [
@@ -75,6 +87,30 @@ const userSchema = new mongoose.Schema(
       
     }
 )
+
+
+
+function generateRandomCode(length){
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let code = ''
+    for (let i=0; i<length; i++){
+        const randomIndex = Math.floor(Math.random()*characters.length)
+        code += characters(randomIndex);
+    }
+    return code;
+}
+
+userSchema.pre('save', async function(next){
+    if(!this.referralCode){
+        let uniqueReferralCode;
+        do{
+            uniqueReferralCode = generateRandomCode(6); //can customise the length of the referral code
+        } while (await this.constructor.findOne({referralCode:uniqueReferralCode}))
+        this.referralCode = uniqueReferralCode
+    }
+    next()
+})
+
 
 
 module.exports = mongoose.model('Users', userSchema)

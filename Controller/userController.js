@@ -249,6 +249,7 @@ const doSignUp = async (req, res, next) => {
         const phone = req.body.phone
         const password = req.body.password
         const newPassword = req.body.confirmpassword
+        
 
         const validationError = validateUserInput(req, res, name, email, phone, password);
         console.log(validationError,"errorrr");
@@ -892,13 +893,20 @@ const getCheckout = async (req, res, next) => {
 const getorders = async (req, res, next) => {
     try {
         const userId = req.session.userId
+        const page = parseInt(req.query.page) || 1
+        const perPage = 5
+        const totalOrders = await Order.find({userId:userId}).populate([
+            {path:'userId'}
+        ]).countDocuments()
+        const totalPages = Math.ceil(totalOrders/perPage)
+
         const catData = await categories.find()
-        console.log(userId);
-        const orders = await Order.find({ userId: userId }).populate([
+        const orders = await Order.find({ userId: userId }).sort({_id:-1}).populate([
             { path: 'userId' },
             { path: 'product.productId' },
-        ]);
-        res.render('orders', { orders, catData })
+        ]).skip((page-1)*perPage).limit(perPage)
+
+        res.render('orders', { orders, catData,currentPage:page,totalPages,perPage })
     } catch (error) {
         next(error)
         console.log(error)
@@ -1031,7 +1039,7 @@ const placeOrder = async (req, res, next) => {
                 product: productIds.map((id, index) => ({
                     productId: id,
                     quantity: parseInt(productQuantity[index], 10),
-                    price: parseInt(productPrice[index], 10),
+                    price: parseInt(productPrice[index]),
                     totalProductAmount: parseInt(productTotalAmount[index], 10),
                     orderStatus: 'pending', //  set the initial status here
                 })),
