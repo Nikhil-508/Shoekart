@@ -31,7 +31,7 @@ var instance = new Razorpay({
 
 
 
-function validateUserInput(req, res, name, email, phone, password) {
+function validateUserInput(name, email, phone, password) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     const phoneRegex = /^[0-9]{10}$/;
@@ -41,19 +41,21 @@ function validateUserInput(req, res, name, email, phone, password) {
     }
 
     if (!emailRegex.test(email)) {
-        return res.render('signup', { message: "Invalid email address" })
-
+        return 'Invalid email address';
     }
+
     if (!phoneRegex.test(phone)) {
-        return res.render('signup', { message: 'Invalid phone number' })
+        return 'Invalid phone number';
     }
 
     if (!passwordRegex.test(password)) {
-        return res.render('signup', { message: "Invalid password" })
+        return 'Invalid password';
     }
 
     return null; // No validation errors
 }
+
+
 
 
 const getHome = async (req, res, next) => {
@@ -86,7 +88,7 @@ const doLogin = async (req, res, next) => {
         const password = req.body.password
         const usermatch = await Users.findOne({ email: email })
         if (!usermatch) {
-            return res.render('login', { message: "Invalid email" })
+            return res.render('login', { message: "User not found" })
         }
         if (usermatch.is_block) {
             return res.render('login', { message: "User is blocked" });
@@ -244,56 +246,83 @@ const getSignup = async (req, res, next) => {
 
 const doSignUp = async (req, res, next) => {
     try {
-        const name = req.body.name
-        const email = req.body.email
-        const phone = req.body.phone
-        const password = req.body.password
-        const newPassword = req.body.confirmpassword
-        
+        const name = req.body.name;
+        const email = req.body.email;
+        const phone = req.body.phone;
+        const password = req.body.password;
+        const newPassword = req.body.confirmpassword;
+        const referralCode = req.body.referralCode 
 
-        const validationError = validateUserInput(req, res, name, email, phone, password);
-        console.log(validationError,"errorrr");
+        const validationError = validateUserInput(name, email, phone, password);
+        console.log(validationError, "errorrr");
         if (validationError) {
-            return res.status(400).send(validationError);
+            return res.render('signup', { message: validationError });
         }
 
-        //confirm password
-        if (password != newPassword) {
-            return res.render('signup', { message: "Passsword do not match" })
+        // Confirm password
+        if (password !== newPassword) {
+            return res.render('signup', { message: "Password does not match" });
         }
-        //check weather user exist or not
-        const userMatch = await Users.findOne({ email: email })
-        if (!userMatch) {
-            const salt = await bcrypt.genSalt(10)
-            const hashedPassword = await bcrypt.hash(password, salt)
-            const hashedNewPassword = await bcrypt.hash(newPassword, salt)
-            const user = {
-                name: name,
-                password: hashedPassword,
-                email: email,
-                phone: phone
+
+        // Check if the user already exists
+        const userMatch = await Users.findOne({ email: email });
+        if (userMatch) {
+            return res.render('signup', { message: "User Already Exists" });
+        }
+          
+
+        // If user does not exist, proceed to save the user
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+        const user = {
+            name: name,
+            password: hashedPassword,
+            email: email,
+            phone: phone
+        };
+
+        const code = referralCode.trim()
+        const referredUser = await Users.findOne({referralCode: code})
+        if(referredUser){
+            const currentDate = Date.now() //this is to get the current timestamp
+            const newTransaction = {
+                amount: 100,
+                type: "Refferal Credit",
+                date: currentDate,
+            };
+            await Users.findByIdAndUpdate(
+                referredUser._id,
+                {
+                    $inc:{wallet:100},
+                    $push:{
+                        walletTransactions:newTransaction
+                    }
+                }
+            )
+            //updating the new users wallet
+            user.wallet = 20
+            user.referred = true
+            user.walletTransactions = user.walletTransactions || [];
+            const newUserTransaction = {
+                amount: 20,
+                type: "Referral Credit",
+                date: currentDate,
+            };
+            user.walletTransactions.push(newUserTransaction)
             }
 
-            const userData = new Users(user)
-            await userData.save()
-            if (userData) {
-                //send the verificatioin  email
-                sendOtpVerificationEmail(userData, res)
-                res.redirect(`/otp-verification?userId=${userData._id}`);
+        const userData = new Users(user);
+        await userData.save();
 
-            } else {
-                res.status(404).json({ error: "error in sign up" })
-            }
-        } else {
-            return res.render('signup', { message: "User Already Exists" })
-        }
-
+        // send the verification email
+        sendOtpVerificationEmail(userData, res);
+        res.redirect(`/otp-verification?userId=${userData._id}`);
     } catch (error) {
-        next(error)
+        next(error);
         console.log(error);
-
     }
-}
+};
 
 
 
@@ -408,8 +437,6 @@ const checkOtpValid = async (req, res, next) => {
             return res.render('otpPage', { message: "The entered OTP  is invalid", userId: ID })
         }
 
-        console.log(ID);
-        console.log(ID, typeof ID);
         await Users.updateOne({ _id: ID }, { $set: { is_verified: true } });
         await userOtpVerification.deleteOne({ userID: ID });
         console.log("completed");
@@ -579,7 +606,6 @@ const updateQuantity = async (req, res, next) => {
         if (product.category.categoryPercentageOffer) {
             totalProductDiscount += Math.floor((newProductAmount * product.category.categoryPercentageOffer / 100))
         }
-        console.log(totalProductDiscount, "discountttttt")
         // Update the quantity and productamount in the user's cart
         const user = await Users.findOneAndUpdate(
             { _id: userId, "cart.product": productId },
@@ -988,7 +1014,7 @@ const placeOrder = async (req, res, next) => {
         
             const User = await Users.findById(req.session.userId)
         
-            let savedOrder; // Declare savedOrder outside the block
+            let savedOrder; 
         
             if (User.wallet >= orderAmount[0]) {
                 User.wallet -= orderAmount[0]

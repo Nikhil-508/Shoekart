@@ -100,7 +100,6 @@ userRouter.post('/user-changePassword',auth.realuserauth,userController.changePa
 userRouter.post('/logout',userController.doLogout)
 
 // otp verification
-
 userRouter.get('/otp-verification',userController.getOtppage)
 userRouter.post('/otp-verification',userController.checkOtpValid)
 

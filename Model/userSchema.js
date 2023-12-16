@@ -95,7 +95,8 @@ function generateRandomCode(length){
     let code = ''
     for (let i=0; i<length; i++){
         const randomIndex = Math.floor(Math.random()*characters.length)
-        code += characters(randomIndex);
+        code += characters.charAt(randomIndex)
+        console.log(code,"codeee")
     }
     return code;
 }
