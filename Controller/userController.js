@@ -133,7 +133,6 @@ const forgotpasswordEmail = async (req, res, next) => {
         user.resetToken = resetToken;
         user.resetTokenExpiration = Date.now() + 3600000; // Set an expiration time (e.g., 1 hour)
         await user.save();
-        console.log(user);
 
         //resetlink
         const resetLink = `http://localhost:3000/resetPassword/${resetToken}`;
@@ -190,10 +189,7 @@ const resetPassword = async (req, res, next) => {
             });
         }
 
-        // Implement the logic to verify the reset token and update the user's password
-        // You should check the token's validity and expiration
-
-        // Example of updating the user's password (replace this with your actual logic)
+       
         const user = await Users.findOne({ resetToken: resetToken });
 
         if (!user || user.resetTokenExpiration < Date.now()) {
@@ -1050,6 +1046,14 @@ const placeOrder = async (req, res, next) => {
             }
         
             if (savedOrder) {
+                
+                if(req.session.couponCode) {
+                    const couponUpdate = await Coupons.updateOne({couponCode : req.session.couponCode},{$push : {claimedUsers : {userId : req.session.userId}}})
+                    console.log("COUPON CODE APPLIED" , couponUpdate);
+                    if(couponUpdate) {
+                        req.session.couponCode = null
+                    }
+                }
                 res.json({ success: true });
             }
         }
@@ -1074,23 +1078,29 @@ const placeOrder = async (req, res, next) => {
             });
             const savedOrder = await order.save();
             if (savedOrder) {
-
+                if(req.session.couponCode) {
+                    const couponUpdate = await Coupons.updateOne({couponCode : req.session.couponCode},{$push : {claimedUsers : {userId : req.session.userId}}})
+                    console.log("COUPON CODE APPLIED" , couponUpdate);
+                    if(couponUpdate) {
+                        req.session.couponCode = null
+                    }
+                }
                 res.json({ success: true })
             }
-        } else if (paymentradio === "Online") {     
-            console.log("onlinneeeeeeee")              //>>>>>>>> Online <<<<<<<<<<<
+            
+        } else if (paymentradio === "Online") {                      //>>>>>>>> Online <<<<<<<<<<<
             // const orderId = `orderId-${uuidv4()}`.substring(0,40)
             const orderId = `orderId-${uuidv4()}`.substring(0, 40)
             req.session.orderId = orderId
             const options = {
-                amount: orderAmount[0],  // amount in the smallest currency unit
+                amount: parseInt(orderAmount , 10),  // amount in the smallest currency unit
                 currency: "INR",
                 receipt: orderId
             };
             instance.orders.create(options, async function (err, razorOrder) {
                 console.log(razorOrder, "guftjyudraysdrdjuhfjuodrhu");
                 if (err) {
-                    console.log(err, 'order error from rezor pay');
+                    console.log('FAIUDHNFIUAUFRVIOUVFOIUFBU IUNVOIUHNVIUFSIUFVHSIMDUFVMJVM' , err);
                 } else {
                     
 
@@ -1106,7 +1116,7 @@ const placeOrder = async (req, res, next) => {
                             totalProductAmount: parseInt(productTotalAmount[index], 10),
                             orderStatus: 'pending', //  set the initial status here
                         })),
-                        total: parseInt(orderAmount[0], 10),
+                        total: parseInt(orderAmount, 10),
                         paymentType: paymentradio,
                     });
                    
@@ -1138,6 +1148,7 @@ const redeemCoupon = async (req, res, next) => {
             const couponCode = req.body.couponCode
             const userData = await Users.findOne({ _id: userid })
             const coupon = await Coupons.findOne({ couponCode: couponCode })
+            req.session.couponCode = couponCode
 
             //>>>>>>>>>>>>> coupon checking <<<<<<<<<<
 
@@ -1150,9 +1161,9 @@ const redeemCoupon = async (req, res, next) => {
                 const minPurchaseAmount = coupon.minPurchaseAmount
                 const maxDiscountPercentage = coupon.percentageDiscount / 100
                 const maxDiscountAmount = coupon.maxDiscount
-                const isClaimed = await Coupons.findOne({ couponCode: couponCode, ClaimedUsers: { $elemMatch: { userId: userid } } })
-                console.log(isClaimed,"couponnnclaimmmm")
+                const isClaimed = await Coupons.findOne({ couponCode: couponCode, claimedUsers: { $elemMatch: { userId: userid } } })
                 if (isClaimed) {
+                    console.log("isClaimed error");
                     return res.json({ claimed: "Already claimed" })
                 } else {
                     if (currentDate <= expiryDate) {
@@ -1171,9 +1182,13 @@ const redeemCoupon = async (req, res, next) => {
                             const discountAmount = oldCartAmount - newTotalCartAmount
                             return res.json({ message: "Coupon Applied", oldCartAmount: oldCartAmount, newTotalCartAmount: newTotalCartAmount, couponCode: couponCode, discountAmount: discountAmount,catData })
                         } else {
+                    console.log("min purchase error");
+
                             return res.json({ minimumAmount: `Minimum purchase amount is Rs.${minPurchaseAmount}` })
                         }
                     } else {
+                    console.log("expired error");
+
                         return res.json({ couponExpired: "The coupon has expired !!!" })
                     }
                 }
@@ -1201,20 +1216,25 @@ const getSuccesful = async (req, res, next) => {
 
 const verifyPayment = async (req, res, next) => {
     try {
-        const { response, order, orderId } = req.body
+        const { response, order, orderId} = req.body
         const sessionOrderId = req.session.orderId
         let hash = crypto.createHmac("sha256", "JdG2FakQQqlUlXItBLeDrxP2")
         hash.update(order.id + "|" + response.razorpay_payment_id, "JdG2FakQQqlUlXItBLeDrxP2")
         hash = hash.digest("hex")
 
         if (hash == response.razorpay_signature) {
-
             await Order.findOne({ orderId: sessionOrderId })
                 .then((response) => {
                     console.log(response);
                 })
-
             const success = await Order.updateOne({ orderId: sessionOrderId }, { $set: { status: "ordered" } })
+            if(req.session.couponCode) {
+                const couponUpdate = await Coupons.updateOne({couponCode : req.session.couponCode},{$push : {claimedUsers : {userId : req.session.userId}}})
+                console.log("COUPON CODE APPLIED" , couponUpdate);
+                if(couponUpdate) {
+                    req.session.couponCode = null
+                }
+            } 
             if (success) {
                 res.json({ success: true })
             } else {

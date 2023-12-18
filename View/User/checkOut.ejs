@@ -2,6 +2,7 @@
 	<%- include("../Layout/navbar") %>
 
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+		<% const inFormat = new Intl.NumberFormat('en-IN' , {style : 'currency' , currency : 'INR'}) %>
 
 		<body class="goto-here">
 			<div class="py-1 bg-black">
@@ -43,7 +44,7 @@
 
 			<section class="ftco-section"> <!--form -o---------->
 
-				<form id="placeorderForm" method="post" action="/placeOrder">
+				<form id="placeorderForm" method="post" action="">
 
 					<div class="container">
 						<div class="row justify-content-center">
@@ -73,8 +74,6 @@
 																</div>
 													</div>
 													<div class="col-sm-3 my-auto">
-
-
 														<div
 															class="add-wrapper d-flex justify-content-between flex-column">
 															<div class="address">
@@ -196,23 +195,27 @@
 																			<span id="subtotal">
 																				<%= finalAmount %>
 																			</span>
+																			<div>
+																				<h3>Discount<h3>
+																				<span id="discount"></span>
+																			</div>
 																			</p>
 
-																			<input type="hidden" name="orderAmount"
+																			<input id="formFinalAmount" type="hidden" name="orderAmount"
 																				value="<%= finalAmount %>">
 
-																			<div class="row my-3">
+																			<!-- <div class="row my-3">
 																				<div class="formDiv">
 																					<form action="/redeemCoupon" method="POST" id="couponForm">
 																						<div class="mb-3">
-																							<label for="exampleInputEmail1" class="form-label">Redeem coupon</label>
-																							<input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="couponCode">
+																							<label for="couponCode" class="form-label">Redeem coupon</label>
+																							<input type="text" class="form-control" id="couponCode" aria-describedby="couponCode" name="couponCode">
 																						</div>
 																						<button type="submit"  id="formButton" class="btn btn-primary">Redeem</button>
 																					</form>
 																				</div>
-																			</div>
-																			<input type="hidden" name="orderAmount" value="<%= subtotal %>">
+																			</div> -->
+																			<!-- <input type="hidden" name="orderAmount" value="<%= subtotal %>"> -->
 
 													</div>
 												</div>
@@ -284,19 +287,34 @@
 									<% } %>
 
 				</form>
+				<div class="formDiv">
+					<form action="/redeemCoupon" method="POST" id="couponForm">
+						<div class="mb-3">
+							<label for="couponCode" class="form-label">Redeem coupon</label>
+							<input type="text" class="form-control" id="couponInput" aria-describedby="couponCode" name="couponCode">
+						</div>
+						<button type="submit"  id="formButton" class="btn btn-primary">Redeem</button>
+					</form>
+					<div id="alertDiv" style="display: none" >
+						
+					</div>
+					<div id="coupon-applied"
+					style="display: none;">
+					coupon applied
+					</div>
+				</div>
 			</section> <!-- .section -->
 			<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 			<script>
-
+		const inFormat = new Intl.NumberFormat('en-IN' , {style : 'currency' , currency : 'INR'})
+		// const couponCodeValue = $('#couponForm').serialize()
+		const couponForm = document.getElementById('couponForm')
+		const couponInput = document.getElementById('couponInput')
+				const couponCodeValue = couponInput.value
 				$('#placeorderForm').submit((event) => {
+					console.log('COUPON CODE IN PLACEORDER' ,  couponCodeValue);
 					event.preventDefault();
-					const abcd = document.getElementById("couponForm")
-					console.log(abcd)
-					// console.log(abcdform)
-					// console.log(abcdinput)
-					console.log(event.target);
-
 					Swal.fire({
 						icon: 'question',
 						title: 'Confirm Place Order?',
@@ -309,6 +327,8 @@
 					}).then((result) => {
 						if (result.value) {
 							// User confirmed to place the order
+							console.log('COUPON CODE IN PLACEORDER' ,  couponCodeValue);
+
 							$.ajax({
 								url: "/placeOrder",
 								method: "post",
@@ -317,7 +337,8 @@
 									if (response.success) {
 										location.href = "/successfull";
 									} else {
-										razorpaypayment(response.order, response.orderId);
+										console.log(couponCodeValue , "COUPONE CODE IN AJX");
+										razorpaypayment(response.order, response.orderId , couponCodeValue);
 									}
 								}
 							});
@@ -326,8 +347,7 @@
 				});
 
 
-				let razorpaypayment = (order, orderId) => {
-					console.log(order, orderId, "order and orderId in razorpaymentttt")
+				let razorpaypayment = (order, orderId , couponCodeValue) => {
 					const options = {
 						"key": "rzp_test_fQpf1jt8afOnex", // Enter the Key ID generated from the Dashboard
 						"amount": order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
@@ -337,11 +357,11 @@
 						"image": "https://example.com/your_logo",
 						"order_id": order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
 						"handler": function (response) {
-							console.log(response, "isudhfjfa;gludaskjhf;ld");
 							// alert(response.razorpay_payment_id);
 							// alert(response.razorpay_order_id);
 							// alert(response.razorpay_signature)
-							verifyPayment(response, order, orderId)
+							console.log(couponCodeValue , "INSIDE RAZORPAYMENT");
+							verifyPayment(response, order, orderId , couponCodeValue)
 
 						},
 						"prefill": {
@@ -368,11 +388,11 @@
 					});
 					rzp1.open()
 				}
-				let verifyPayment = (response, order, orderId) => {
+				let verifyPayment = (response, order, orderId , couponCodeValue) => {
 					$.ajax({
 						url: "/verifyPayment",
 						method: "post",
-						data: { response, order, orderId },
+						data: { response, order, orderId ,couponCodeValue },
 						success: (response) => {
 							console.log(response);
 							if (response.success) {
@@ -384,24 +404,32 @@
 					})
 				}
 				// >>>>>>>> redeem coupon <<<<<<<<<<<
+				function displayError(message) {
+                $('#alertDiv ').attr({ style: 'display : block' }).html(message)
+                setTimeout(() => {
+                    $('#alertDiv').fadeOut('slow')
+                }, 2000)
+            }
 
-				
-				const abcdform = document.getElementById('couponForm')
-				const abcdinput = abcdform.querySelector('input')
-				form.addEventListener('submit', async (event) => {
+				// const couponForm = document.getElementById('couponForm')
+				// const couponInput = document.getElementById('couponInput')
+				couponForm.addEventListener('submit', async (event) => {
 					event.preventDefault()
-					if (input.value == "") {
+					if (couponInput.value == "") {
 						displayError("please enter a coupon code!!")
 					} else {
+						console.log(couponInput.value , "0000000000000");
 						const url = "/redeemCoupon";
-						const formData = new FormData(form);
+						const formData = new FormData(couponForm);
 						try {
+							console.log(formData , "11111111111111111");
 							const response = await fetch(url, {
 								method: "POST",
 								headers: { "Content-Type": "application/json" },
 								body: JSON.stringify(Object.fromEntries(formData)),
 							});
 							const data = await response.json();
+							console.log("form dataaa" , data);
 							if (data.error) {
 								displayError(data.error)
 							} else if (data.redeemCoupon) {
@@ -414,25 +442,19 @@
 								displayError(data.couponExpired)
 							} else {
 								displayError(data.message);
-								const newTotalCartAmount = informat.format(data.newTotalCartAmount)
+								const newTotalCartAmount = inFormat.format(data.newTotalCartAmount)
 								const oldCartAmount = inFormat.format(data.oldCartAmount)
 								const discountAmount = inFormat.format(data.discountAmount)
 
 								$(`#totalPayable`).html(newTotalCartAmount) //total payable
 								$(`.disc`).removeClass(`text-muted`).addClass(`text-success`)
 								$(`#discount`).html(discountAmount) // discount
-								$('#coupon-applied').attr({ style: 'display : block' }) //form placeholder
-								input.value = data.couponCode
-								const couponData = input.value
-								let placeholder = data.couponCode.toUpperCase()
-								input.placeholder = `Applied ${placeholder}`
-								$('#couponCodeHere').html(data.couponCode)
-								$('#total-pay-to-server').attr({ value: `${data.newTotalCartAmount}` })
-								$('#disc-to-server').attr({ value: `${data.discountAmount}` })
-								$('#couponData').attr({ value: `${couponData}` })
-
+								$('#discount').addClass('text-success')
+								$('#subtotal').html(newTotalCartAmount)
+								$('#formFinalAmount').attr({value : `${data.newTotalCartAmount}`})
+								
 							}
-							form.reset();
+							// couponForm.reset();
 						} catch (error) {
 							console.log(error);
 						}
