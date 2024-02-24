@@ -8,14 +8,16 @@
             justify-content: center;
             align-items: center;
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            /* background-color: #f4f4f4; */
+            background-image: url("https://png.pngtree.com/background/20230528/original/pngtree-nike-running-shoes-on-black-background-with-colorful-splashes-picture-image_2780738.jpg");
+            
             padding-top: 130px;
         }
 
         .signup-container {
             width: 350px;
             margin: 0 auto;
-            background-color: #fff;
+            background: rgba(250, 248, 248, 0.5);
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
@@ -104,7 +106,8 @@
        <% 
        if(typeof message!=='undefined'){
         %>
-        <p style="color: rgb(232, 31, 20);"><%=message%></p>
+        <h4 style="color: rgb(111, 3, 3);">
+         <%=message%></h4>
         <%
        }
        %>

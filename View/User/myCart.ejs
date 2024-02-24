@@ -213,25 +213,7 @@
         <script src="/User/js/google-map.js"></script>
         <script src="/User/js/main.js"></script>
 
-        <!-- <script>
-    $(document).ready(function () {
-        $('.quantity-right-plus').click(function () {
-            var inputField = $(this).closest('.input-group').find('.input-number');
-            var currentValue = parseInt(inputField.val());
-            if (!isNaN(currentValue) && currentValue < parseInt(inputField.attr('max'))) {
-                inputField.val(currentValue + 1);
-            }
-        });
 
-        $('.quantity-left-minus').click(function () {
-            var inputField = $(this).closest('.input-group').find('.input-number');
-            var currentValue = parseInt(inputField.val());
-            if (!isNaN(currentValue) && currentValue > parseInt(inputField.attr('min'))) {
-                inputField.val(currentValue - 1);
-            }
-        });
-    });
-</script> -->
 
         <script>
           const submitLinks = document.querySelectorAll(".submit-link");
@@ -256,11 +238,6 @@
               let productId = input.data("productid");
               let currentQuantity = parseInt(input.val());
               let minusButton = document.getElementById("minusButton")
-              // let discountAmount = document.getElementById("discountAmount")
-              // let offerPercentage = document.getElementById("offerPercentage").innerText - 0
-              // let subTotal = document.getElementById("subtotal").innerText - 0
-              // Math.floor(element.product.offerpercentage * subtotal / 100)
-              // let maximumbutton = document.getElementById("maximumbutton")
               if (currentQuantity === 2) {
                 minusButton.disabled = true
               } else {

@@ -927,7 +927,7 @@ const getorders = async (req, res, next) => {
             { path: 'userId' },
             { path: 'product.productId' },
         ]).skip((page-1)*perPage).limit(perPage)
-
+        console.log(orders,"ordrrrr");
         res.render('orders', { orders, catData,currentPage:page,totalPages,perPage })
     } catch (error) {
         next(error)
